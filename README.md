@@ -19,6 +19,6 @@ make
 # Future Development
     I have already develop the multithread one, but the time for predicting one image is slower than sequential one, since creating and destroying threads cost more time.
     I will optimize it and update it later.
-    Second, I will also develop a version on **GPU**, and will also upload later.
+    Second, I will also develop a version on GPU, and will also upload later.
 
 if you have any question, contact me at declanxu@gmail.com or declanxu@126.com, THANKS.
