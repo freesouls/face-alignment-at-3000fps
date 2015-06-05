@@ -130,8 +130,8 @@ bool ShapeInRect(cv::Mat_<double>& shape, cv::Rect& ret){
 
 	if ((max_x - min_x) > ret.width * 1.5) return false;
 	if ((max_y - min_y) > ret.height * 1.5) return false;
-	if (abs(sum_x - (ret.x + ret.width / 2.0)) > ret.width / 2.0) return false;
-	if (abs(sum_y - (ret.y + ret.height / 2.0)) > ret.height / 2.0) return false;
+    if (std::abs(sum_x - (ret.x + ret.width / 2.0)) > ret.width / 2.0) return false;
+    if (std::abs(sum_y - (ret.y + ret.height / 2.0)) > ret.height / 2.0) return false;
 	return true;
 }
 
