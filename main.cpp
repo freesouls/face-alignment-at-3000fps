@@ -46,7 +46,7 @@ void Test(const char* ModelName){
         //double err = CalculateError(grodund_truth_shapes[i], res);
         //cout << "error: " << err << std::endl;
 
-        //DrawPredictedImage(images[i], res);
+        DrawPredictedImage(images[i], res);
 		//if (i == 10) break;
 	}
     gettimeofday(&t2, NULL);
@@ -121,15 +121,15 @@ void Train(const char* ModelName){
 	Parameters params;
     params.local_features_num_ = 500;
 	params.landmarks_num_per_face_ = 68;
-    params.regressor_stages_ = 6;
+    params.regressor_stages_ = 5;
 	params.local_radius_by_stage_.push_back(0.4);
     params.local_radius_by_stage_.push_back(0.3);
     params.local_radius_by_stage_.push_back(0.2);
 	params.local_radius_by_stage_.push_back(0.1);
-    params.local_radius_by_stage_.push_back(0.08);
+    //params.local_radius_by_stage_.push_back(0.08);
     params.local_radius_by_stage_.push_back(0.05);
     params.tree_depth_ = 4;
-    params.trees_num_per_forest_ = 8;
+    params.trees_num_per_forest_ = 5;
     params.initial_guess_ = 5;
 
 	params.mean_shape_ = GetMeanShape(ground_truth_shapes, bboxes);
