@@ -101,6 +101,7 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
 
 	// calculate the regression targets
 	std::cout << "calculate regression targets" << std::endl;
+    #pragma omp parallel for
 	for (int i = 0; i < augmented_current_shapes.size(); i++){
 		regression_targets[i] = ProjectShape(augmented_ground_truth_shapes[i], augmented_bboxes[i])
 			- ProjectShape(augmented_current_shapes[i], augmented_bboxes[i]);
@@ -116,6 +117,7 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
 
 	std::cout << "train forest of stage:" << stage_ << std::endl;
 	rd_forests_.resize(params_.landmarks_num_per_face_);
+    #pragma omp parallel for
 	for (int i = 0; i < params_.landmarks_num_per_face_; ++i){
         std::cout << "landmark: " << i << std::endl;
 		rd_forests_[i] = RandomForest(params_, i, stage_, regression_targets);
@@ -135,7 +137,7 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
     for (int i=0; i < params_.landmarks_num_per_face_; ++i){
         num_feature += rd_forests_[i].all_leaf_nodes_;
     }
-
+    #pragma omp parallel for
     for (int i = 0; i < augmented_current_shapes.size(); ++i){
         int index = 1;
         int ind = 0;
@@ -204,8 +206,9 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
 	std::cout << "Global Regression of stage " << stage_ << std::endl;
     linear_model_x_.resize(params_.landmarks_num_per_face_);
     linear_model_y_.resize(params_.landmarks_num_per_face_);
-    double* targets = new double[augmented_current_shapes.size()];
+    #pragma omp parallel for
     for (int i = 0; i < params_.landmarks_num_per_face_; ++i){
+        double* targets = new double[augmented_current_shapes.size()];
         std::cout << "regress landmark " << i << std::endl;
         for(int j = 0; j< augmented_current_shapes.size();j++){
             targets[j] = regression_targets[j](i, 0);
@@ -221,11 +224,14 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
         check_parameter(prob, regression_params);
         regression_model = train(prob, regression_params);
         linear_model_y_[i] = regression_model;
+        delete[] targets;
     }
 
 	std::cout << "predict regression targets" << std::endl;
+
     std::vector<cv::Mat_<double> > predict_regression_targets;
     predict_regression_targets.resize(augmented_current_shapes.size());
+    #pragma omp parallel for
     for (int i = 0; i < augmented_current_shapes.size(); i++){
         cv::Mat_<double> a(params_.landmarks_num_per_face_, 2, 0.0);
         for (int j = 0; j < params_.landmarks_num_per_face_; j++){
@@ -241,7 +247,7 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
     }
     std::cout << "\n";
 
-    delete[] targets;
+
     for (int i = 0; i< augmented_current_shapes.size(); i++){
         delete[] global_binary_features[i];
     }
@@ -395,6 +401,64 @@ void Regressor::GetFeaThread(){
     }
 }
 
+struct feature_node* Regressor::GetGlobalBinaryFeaturesMP(cv::Mat_<uchar>& image,
+    cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& rotation, double scale){
+    int index = 1;
+
+    struct feature_node* binary_features = new feature_node[params_.trees_num_per_forest_*params_.landmarks_num_per_face_+1];
+    //int ind = 0;
+#pragma omp parallel for
+    for (int j = 0; j < params_.landmarks_num_per_face_; ++j)
+    {
+        for (int k = 0; k < params_.trees_num_per_forest_; ++k)
+        {
+            Node* node = rd_forests_[j].trees_[k];
+            while (!node->is_leaf_){
+                FeatureLocations& pos = node->feature_locations_;
+                double delta_x = rotation(0, 0)*pos.start.x + rotation(0, 1)*pos.start.y;
+                double delta_y = rotation(1, 0)*pos.start.x + rotation(1, 1)*pos.start.y;
+                delta_x = scale*delta_x*bbox.width / 2.0;
+                delta_y = scale*delta_y*bbox.height / 2.0;
+                int real_x = delta_x + current_shape(j, 0);
+                int real_y = delta_y + current_shape(j, 1);
+                real_x = std::max(0, std::min(real_x, image.cols - 1)); // which cols
+                real_y = std::max(0, std::min(real_y, image.rows - 1)); // which rows
+                int tmp = (int)image(real_y, real_x); //real_y at first
+
+                delta_x = rotation(0, 0)*pos.end.x + rotation(0, 1)*pos.end.y;
+                delta_y = rotation(1, 0)*pos.end.x + rotation(1, 1)*pos.end.y;
+                delta_x = scale*delta_x*bbox.width / 2.0;
+                delta_y = scale*delta_y*bbox.height / 2.0;
+                real_x = delta_x + current_shape(j, 0);
+                real_y = delta_y + current_shape(j, 1);
+                real_x = std::max(0, std::min(real_x, image.cols - 1)); // which cols
+                real_y = std::max(0, std::min(real_y, image.rows - 1)); // which rows
+                if ((tmp - (int)image(real_y, real_x)) < node->threshold_){
+                    node = node->left_child_;// go left
+                }
+                else{
+                    node = node->right_child_;// go right
+                }
+            }
+
+            //int ind = j*params_.trees_num_per_forest_ + k;
+            int ind = feature_node_index[j] + k;
+            binary_features[ind].index = leaf_index_count[j] + node->leaf_identity;
+            //binary_features[ind].index = index + node->leaf_identity;//rd_forests_[j].GetBinaryFeatureIndex(k,image, bbox, current_shape, rotation, scale);
+            binary_features[ind].value = 1.0;
+            //ind++;
+            //std::cout << binary_features[ind].index << " ";
+        }
+
+        //index += rd_forests_[j].all_leaf_nodes_;
+    }
+    //std::cout << "\n";
+    //std::cout << index << ":" << params_.trees_num_per_forest_*params_.landmarks_num_per_face_ << std::endl;
+    binary_features[params_.trees_num_per_forest_*params_.landmarks_num_per_face_].index = -1;
+    binary_features[params_.trees_num_per_forest_*params_.landmarks_num_per_face_].value = -1.0;
+    return binary_features;
+}
+
 struct feature_node* Regressor::GetGlobalBinaryFeatures(cv::Mat_<uchar>& image,
     cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& rotation, double scale){
     int index = 1;
@@ -435,6 +499,8 @@ struct feature_node* Regressor::GetGlobalBinaryFeatures(cv::Mat_<uchar>& image,
             }
 
             //int ind = j*params_.trees_num_per_forest_ + k;
+            //int ind = feature_node_index[j] + k;
+            //binary_features[ind].index = leaf_index_count[j] + node->leaf_identity;
             binary_features[ind].index = index + node->leaf_identity;//rd_forests_[j].GetBinaryFeatureIndex(k,image, bbox, current_shape, rotation, scale);
             binary_features[ind].value = 1.0;
             ind++;
@@ -457,7 +523,15 @@ cv::Mat_<double> Regressor::Predict(cv::Mat_<uchar>& image,
 
     //feature_node* binary_features = GetGlobalBinaryFeaturesThread(image, current_shape, bbox, rotation, scale);
     feature_node* binary_features = GetGlobalBinaryFeatures(image, current_shape, bbox, rotation, scale);
-
+//    feature_node* tmp_binary_features = GetGlobalBinaryFeaturesMP(image, current_shape, bbox, rotation, scale);
+//    for (int i = 0; i < params_.trees_num_per_forest_*params_.landmarks_num_per_face_; i++){
+//        std::cout << binary_features[i].index << " ";
+//    }
+//    std::cout << "ha\n";
+//    for (int i = 0; i < params_.trees_num_per_forest_*params_.landmarks_num_per_face_; i++){
+//        std::cout << tmp_binary_features[i].index << " ";
+//    }
+//    std::cout << "ha2\n";
     for (int i = 0; i < current_shape.rows; i++){
 		predict_result(i, 0) = predict(linear_model_x_[i], binary_features);
         predict_result(i, 1) = predict(linear_model_y_[i], binary_features);
@@ -472,7 +546,7 @@ cv::Mat_<double> Regressor::Predict(cv::Mat_<uchar>& image,
 
 void CascadeRegressor::LoadCascadeRegressor(std::string ModelName){
 	std::ifstream fin;
-    fin.open((ModelName + "_params").c_str(), std::fstream::in);
+    fin.open((ModelName + "_params.txt").c_str(), std::fstream::in);
 	params_ = Parameters();
 	fin >> params_.local_features_num_ 
 		>> params_.landmarks_num_per_face_
@@ -504,7 +578,7 @@ void CascadeRegressor::LoadCascadeRegressor(std::string ModelName){
 
 void CascadeRegressor::SaveCascadeRegressor(std::string ModelName){
 	std::ofstream fout;
-    fout.open((ModelName + "_params").c_str(), std::fstream::out);
+    fout.open((ModelName + "_params.txt").c_str(), std::fstream::out);
 	fout << params_.local_features_num_ << " "
 		<< params_.landmarks_num_per_face_ << " "
 		<< params_.regressor_stages_ << " "
@@ -531,7 +605,7 @@ void CascadeRegressor::SaveCascadeRegressor(std::string ModelName){
 
 void Regressor::LoadRegressor(std::string ModelName, int stage){
 	char buffer[50];
-    sprintf(buffer, "%s_%d_regressor", ModelName.c_str(), stage);
+    sprintf(buffer, "%s_%d_regressor.txt", ModelName.c_str(), stage);
 	std::ifstream fin;
 	fin.open(buffer, std::fstream::in);
 	int rd_size, linear_size;
@@ -543,19 +617,21 @@ void Regressor::LoadRegressor(std::string ModelName, int stage){
 	linear_model_x_.clear();
 	linear_model_y_.clear();
 	for (int i = 0; i < linear_size; i++){
-        sprintf(buffer, "%s_%d/%d_linear_x", ModelName.c_str(), stage_, i);
+        sprintf(buffer, "%s_%d/%d_linear_x.txt", ModelName.c_str(), stage_, i);
 		linear_model_x_.push_back(load_model(buffer));
 
-        sprintf(buffer, "%s_%d/%d_linear_y", ModelName.c_str(), stage_, i);
+        sprintf(buffer, "%s_%d/%d_linear_y.txt", ModelName.c_str(), stage_, i);
 		linear_model_y_.push_back(load_model(buffer));
 	}
 }
 
 void Regressor::ConstructLeafCount(){
     int index = 1;
+    int ind = params_.trees_num_per_forest_;
     for (int i = 0; i < params_.landmarks_num_per_face_; ++i){
         leaf_index_count[i] = index;
         index += rd_forests_[i].all_leaf_nodes_;
+        feature_node_index[i] = ind*i;
     }
 }
 
@@ -563,7 +639,7 @@ void Regressor::SaveRegressor(std::string ModelName, int stage){
 	char buffer[50];
 	//strcpy(buffer, ModelName.c_str());
 	assert(stage == stage_);
-    sprintf(buffer, "%s_%d_regressor", ModelName.c_str(), stage);
+    sprintf(buffer, "%s_%d_regressor.txt", ModelName.c_str(), stage);
 	
 	std::ofstream fout;
 	fout.open(buffer, std::fstream::out);
@@ -577,7 +653,7 @@ void Regressor::SaveRegressor(std::string ModelName, int stage){
 
     for (
          int i = 0; i < linear_model_x_.size(); i++){
-		sprintf(buffer, "%s_%d", ModelName.c_str(), stage_);
+        sprintf(buffer, "%s_%d", ModelName.c_str(), stage_);
 #ifdef _WIN32 // can be used under 32 and 64 bits
         _mkdir(buffer);
 #elif __linux__
@@ -587,10 +663,10 @@ void Regressor::SaveRegressor(std::string ModelName, int stage){
         }
 #endif
 		//_mkdir(buffer);
-        sprintf(buffer, "%s_%d/%d_linear_x", ModelName.c_str(), stage_, i);
+        sprintf(buffer, "%s_%d/%d_linear_x.txt", ModelName.c_str(), stage_, i);
 		save_model(buffer, linear_model_x_[i]);
 
-        sprintf(buffer, "%s_%d/%d_linear_y", ModelName.c_str(), stage_, i);
+        sprintf(buffer, "%s_%d/%d_linear_y.txt", ModelName.c_str(), stage_, i);
 		save_model(buffer, linear_model_y_[i]);
 	}
 }

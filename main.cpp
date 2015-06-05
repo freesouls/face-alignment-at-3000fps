@@ -7,6 +7,7 @@
 #include "headers.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <omp.h>
 
 //#include <sys/time.h>
 //#include "facedetect-dll.h"
@@ -87,11 +88,15 @@ void TestImage(const char* name, CascadeRegressor& rg){
         bbox.center_x = bbox.start_x + bbox.width / 2.0;
         bbox.center_y = bbox.start_y + bbox.height / 2.0;
         cv::Mat_<double> current_shape = ReProjection(rg.params_.mean_shape_, bbox);
+        //cv::Mat_<double> tmp = image.clone();
+        //DrawPredictedImage(tmp, current_shape);
         gettimeofday(&t1, NULL);
         cv::Mat_<double> res = rg.Predict(image, current_shape, bbox);//, ground_truth_shapes[i]);
         gettimeofday(&t2, NULL);
         cout << "time predict: " << t2.tv_sec - t1.tv_sec + (t2.tv_usec - t1.tv_usec)/1000000.0 << endl;
         cv::rectangle(image, faceRec, (255), 1);
+        //cv::imshow("show image", image);
+        //cv::waitKey(0);
         DrawPredictedImage(image, res);
         break;
     }
@@ -137,6 +142,20 @@ void Train(const char* ModelName){
 
 int main(int argc, char* argv[])
 {
+//    int a[10];
+//    #pragma omp parallel for
+//    for(int i=0; i < 10; i++){
+//        int index = 0;
+//        for(int j = i; j<10; j++){
+//            index += j;
+//        }
+//        a[i] = index;
+//        std::cout << i << " :curent: " << index << std::endl;
+//    }
+
+//    for(int i=0; i < 10; i++){
+//        std::cout << i << " :final: " << a[i] << std::endl;
+//    }
 	if (argc >= 3)
 	{
 		if (strcmp(argv[1], "train") == 0)

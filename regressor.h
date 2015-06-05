@@ -20,6 +20,7 @@ public:
     cv::Mat_<double> tmp_rotation;
     double tmp_scale;
     int leaf_index_count[68];
+    int feature_node_index[68];
     std::atomic<int> cur_landmark {0};
 
 public:
@@ -40,6 +41,8 @@ public:
 	void SaveRegressor(std::string ModelName, int stage);
     void ConstructLeafCount();
     struct feature_node* GetGlobalBinaryFeaturesThread(cv::Mat_<uchar>& image, cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& rotation, double scale);
+    struct feature_node* GetGlobalBinaryFeaturesMP(cv::Mat_<uchar>& image,
+        cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& rotation, double scale);
     void GetFeaThread();
 };
 

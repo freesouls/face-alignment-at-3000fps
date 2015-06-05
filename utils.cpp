@@ -195,6 +195,7 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
         count++;
         if (count%100 == 0){
             std::cout << count << " images loaded\n";
+            break;
         }
         continue;
 

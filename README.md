@@ -9,14 +9,24 @@ make
 ./application test ModelName # when testing 
 ./application test ModelName imageName # when testing one image
 ```
+
 # Notes
-    you should change some image path for correctly running the program.
+    you should change some image PATH is the code for correctly running the program.
+    I use the opencv face detection method, you can change to what you like, as long as using the same face detector in training and testing
     it can both run under Windows and Unix-like systems.
-    it can reach 100~200 fps(even faster) on a single i7 core when the model is 5 layers deep,
-    it can reach 50~60 fps on a single i7 core when the model is 6 layers deep with 10 trees in each Random Forest.
+    it can reach 100~200 fps(even faster) on a single i7 core when the model is 5 or 6 layers deep,
+
+# Results Image:
+###1. first use the mean shape for initial shape:
+![](./initial)
+###2. detect the face
+![](./detect)
+###3. predict the face landmarks by refine the initial shape
+![](./final)
 
 
 # Future Development
+	I have add up the openMP to use multithread for faster training, it is really fast, takes an hour when the model is 5 layers deep and 10 trees in each forest with about 8000+ augmented images.
     I have already develop the multithread one, but the time for predicting one image is slower than sequential one, since creating and destroying threads cost more time.
     I will optimize it and update it later.
     Second, I will also develop a version on GPU, and will also upload later.
