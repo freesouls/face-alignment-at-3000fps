@@ -1,4 +1,4 @@
-# face-alignment-at-3000fps
+# face alignment at 3000fps
 It is an implementation of Face Alignment at 3000fps via Local Binary Features, a paper on CVPR 2014
 #How To Use
 ```
