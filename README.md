@@ -13,6 +13,7 @@ make
 # Notes
     you should change some image PATH is the code for correctly running the program.
     I use the opencv face detection method, you can change to what you like, as long as using the same face detector in training and testing
+    the paralled program has a little problem, so please just comment(delete) all the '#pragma omp parallel for', and I will fix it as soon as possible.
     it can both run under Windows and Unix-like systems.
     it can reach 100~200 fps(even faster) on a single i7 core when the model is 5 or 6 layers deep,
 
