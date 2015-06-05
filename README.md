@@ -18,11 +18,11 @@ make
 
 # Results Image:
 ###1. first use the mean shape for initial shape:
-![](./initial)
+![](./initial.png)
 ###2. detect the face
-![](./detect)
+![](./detect.png)
 ###3. predict the face landmarks by refine the initial shape
-![](./final)
+![](./final.png)
 
 
 # Future Development
