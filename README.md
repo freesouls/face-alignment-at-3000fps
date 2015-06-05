@@ -2,6 +2,8 @@
 It is an implementation of Face Alignment at 3000fps via Local Binary Features, a paper on CVPR 2014
 #How To Use
 ```
+mkdir release
+cp CMakeList.txt ./release
 cd release
 cmake .
 make
