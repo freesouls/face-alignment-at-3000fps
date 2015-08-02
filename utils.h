@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <thread>
 //#include <mutex>
-#include <atomic>
+// #include <atomic>
 //using namespace std;
 //using namespace cv;
 

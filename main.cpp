@@ -7,7 +7,9 @@
 #include "headers.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef __linux__
 #include <omp.h>
+#endif
 
 //#include <sys/time.h>
 //#include "facedetect-dll.h"
@@ -121,15 +123,15 @@ void Train(const char* ModelName){
 	Parameters params;
     params.local_features_num_ = 500;
 	params.landmarks_num_per_face_ = 68;
-    params.regressor_stages_ = 5;
+    params.regressor_stages_ = 6;
 	params.local_radius_by_stage_.push_back(0.4);
     params.local_radius_by_stage_.push_back(0.3);
     params.local_radius_by_stage_.push_back(0.2);
 	params.local_radius_by_stage_.push_back(0.1);
-    //params.local_radius_by_stage_.push_back(0.08);
+    params.local_radius_by_stage_.push_back(0.08);
     params.local_radius_by_stage_.push_back(0.05);
-    params.tree_depth_ = 4;
-    params.trees_num_per_forest_ = 5;
+    params.tree_depth_ = 5;
+    params.trees_num_per_forest_ = 8;
     params.initial_guess_ = 5;
 
 	params.mean_shape_ = GetMeanShape(ground_truth_shapes, bboxes);
@@ -179,7 +181,7 @@ int main(int argc, char* argv[])
 	}
 
     std::cout << "use [./application train ModelName] or [./application test ModelName [image_name]] \n";
-	return 0;	
+	return 0;
 }
 
 /*

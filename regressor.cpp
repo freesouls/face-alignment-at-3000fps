@@ -22,12 +22,12 @@ void CascadeRegressor::Train(const std::vector<cv::Mat_<uchar> >& images,
 	params_ = params;
 	bboxes_ = bboxes;
 	ground_truth_shapes_ = ground_truth_shapes;
-	
+
 	std::vector<int> augmented_images_index; // just index in images_
 	std::vector<BoundingBox> augmented_bboxes;
 	std::vector<cv::Mat_<double> > augmented_ground_truth_shapes;
 	std::vector<cv::Mat_<double> > augmented_current_shapes; //
-	
+
 	time_t current_time;
 	current_time = time(0);
 	//cv::RNG *random_generator = new cv::RNG();
@@ -58,13 +58,13 @@ void CascadeRegressor::Train(const std::vector<cv::Mat_<uchar> >& images,
     std::cout << "augmented size: " << augmented_current_shapes.size() << std::endl;
 
 	std::vector<cv::Mat_<double> > shape_increaments;
-	
+
 regressors_.resize(params_.regressor_stages_);
 	for (int i = 0; i < params_.regressor_stages_; i++){
 		std::cout << "training stage: " << i << " of " << params_.regressor_stages_ << std::endl;
 		shape_increaments = regressors_[i].Train(images_,
-											augmented_images_index,  
-											augmented_ground_truth_shapes, 
+											augmented_images_index,
+											augmented_ground_truth_shapes,
 											augmented_bboxes,
 											augmented_current_shapes,
 											params_,
@@ -76,7 +76,7 @@ regressors_.resize(params_.regressor_stages_);
 			augmented_current_shapes[j] = ReProjection(augmented_current_shapes[j], augmented_bboxes[j]);
 			error += CalculateError(augmented_ground_truth_shapes[j], augmented_current_shapes[j]);
 		}
-		
+
         std::cout << "regression error: " <<  error << ": " << error/shape_increaments.size() << std::endl;
 	}
 }
@@ -122,7 +122,7 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
         std::cout << "landmark: " << i << std::endl;
 		rd_forests_[i] = RandomForest(params_, i, stage_, regression_targets);
         rd_forests_[i].TrainForest(
-			images,augmented_images_index, augmented_bboxes, augmented_current_shapes, 
+			images,augmented_images_index, augmented_bboxes, augmented_current_shapes,
 			rotations_, scales_);
 	}
 	std::cout << "Get Global Binary Features" << std::endl;
@@ -266,10 +266,10 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
 
 cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 	cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& ground_truth_shape){
-	
-	cv::Mat_<uchar> tmp; 
+
+	cv::Mat_<uchar> tmp;
 	image.copyTo(tmp);
-	
+
 	for (int j = 0; j < current_shape.rows; j++){
 		cv::circle(tmp, cv::Point2f(current_shape(j, 0), current_shape(j, 1)), 2, (255));
 	}
@@ -277,7 +277,7 @@ cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 	cv::waitKey(0);
 
 	for (int i = 0; i < params_.regressor_stages_; i++){
-		
+
 		cv::Mat_<double> rotation;
 		double scale;
 		if(i==0){
@@ -285,7 +285,7 @@ cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 		}else{
 			getSimilarityTransform(ProjectShape(current_shape, bbox), params_.mean_shape_, rotation, scale);
 		}
-		
+
 		cv::Mat_<double> shape_increaments = regressors_[i].Predict(image, current_shape, bbox, rotation, scale);
 		current_shape = shape_increaments + ProjectShape(current_shape, bbox);
 		current_shape = ReProjection(current_shape, bbox);
@@ -302,7 +302,7 @@ cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 
 cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 	cv::Mat_<double>& current_shape, BoundingBox& bbox){
-	
+
 	for (int i = 0; i < params_.regressor_stages_; i++){
         cv::Mat_<double> rotation;
 		double scale;
@@ -324,7 +324,7 @@ Regressor::Regressor(const Regressor &a){
 Regressor::~Regressor(){
 
 }
-
+/*
 struct feature_node* Regressor::GetGlobalBinaryFeaturesThread(cv::Mat_<uchar>& image,
     cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& rotation, double scale){
     struct feature_node* binary_features = new feature_node[params_.trees_num_per_forest_*params_.landmarks_num_per_face_+1];
@@ -334,7 +334,7 @@ struct feature_node* Regressor::GetGlobalBinaryFeaturesThread(cv::Mat_<uchar>& i
     tmp_bbox = bbox;
     tmp_rotation = rotation;
     tmp_scale = scale;
-    cur_landmark.store(0);
+    // cur_landmark.store(0);
 
 
     int num_threads = 2;
@@ -358,7 +358,8 @@ struct feature_node* Regressor::GetGlobalBinaryFeaturesThread(cv::Mat_<uchar>& i
 
     return binary_features;
 }
-
+*/
+/*
 void Regressor::GetFeaThread(){
     int cur = -1;
     while(1){
@@ -407,7 +408,7 @@ void Regressor::GetFeaThread(){
         }
     }
 }
-
+*/
 struct feature_node* Regressor::GetGlobalBinaryFeaturesMP(cv::Mat_<uchar>& image,
     cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& rotation, double scale){
     int index = 1;
@@ -473,7 +474,7 @@ struct feature_node* Regressor::GetGlobalBinaryFeatures(cv::Mat_<uchar>& image,
     struct feature_node* binary_features = new feature_node[params_.trees_num_per_forest_*params_.landmarks_num_per_face_+1];
     int ind = 0;
     for (int j = 0; j < params_.landmarks_num_per_face_; ++j)
-    {      
+    {
         for (int k = 0; k < params_.trees_num_per_forest_; ++k)
         {
             Node* node = rd_forests_[j].trees_[k];
@@ -525,7 +526,7 @@ struct feature_node* Regressor::GetGlobalBinaryFeatures(cv::Mat_<uchar>& image,
 
 cv::Mat_<double> Regressor::Predict(cv::Mat_<uchar>& image,
 	cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& rotation, double scale){
-	
+
 	cv::Mat_<double> predict_result(current_shape.rows, current_shape.cols, 0.0);
 
     //feature_node* binary_features = GetGlobalBinaryFeaturesThread(image, current_shape, bbox, rotation, scale);
@@ -555,7 +556,7 @@ void CascadeRegressor::LoadCascadeRegressor(std::string ModelName){
 	std::ifstream fin;
     fin.open((ModelName + "_params.txt").c_str(), std::fstream::in);
 	params_ = Parameters();
-	fin >> params_.local_features_num_ 
+	fin >> params_.local_features_num_
 		>> params_.landmarks_num_per_face_
 		>> params_.regressor_stages_
 		>> params_.tree_depth_
@@ -600,7 +601,7 @@ void CascadeRegressor::SaveCascadeRegressor(std::string ModelName){
 	}
 
 	fout.close();
-	
+
     for (int i = 0; i < params_.regressor_stages_; i++){
 		//regressors_[i].SaveRegressor(fout);
         regressors_[i].SaveRegressor(ModelName, i);
@@ -647,7 +648,7 @@ void Regressor::SaveRegressor(std::string ModelName, int stage){
 	//strcpy(buffer, ModelName.c_str());
 	assert(stage == stage_);
     sprintf(buffer, "%s_%d_regressor.txt", ModelName.c_str(), stage);
-	
+
 	std::ofstream fout;
 	fout.open(buffer, std::fstream::out);
 	fout << stage_ << " "
@@ -677,4 +678,3 @@ void Regressor::SaveRegressor(std::string ModelName, int stage){
 		save_model(buffer, linear_model_y_[i]);
 	}
 }
-

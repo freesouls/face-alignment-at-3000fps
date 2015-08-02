@@ -147,7 +147,7 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 	//const std::vector<cv::Mat_<double> >& current_shapes,
 	std::vector<BoundingBox>& bboxes,
 	std::string file_names){
-	
+
     std::string fn_haar = "./../haarcascade_frontalface_alt2.xml";
     cv::CascadeClassifier haar_cascade;
     bool yes = haar_cascade.load(fn_haar);
@@ -201,7 +201,7 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 
         std::vector<cv::Rect> faces;// = DetectFaces(image);
         haar_cascade.detectMultiScale(image, faces, 1.1, 2, 0, cv::Size(30, 30));
-		
+
          for (int i = 0; i < faces.size(); i++){
             cv::Rect faceRec = faces[i];
             if (ShapeInRect(ground_truth_shape, faceRec)){
