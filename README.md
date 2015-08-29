@@ -1,6 +1,9 @@
 # face alignment at 3000fps
 It is an implementation of Face Alignment at 3000fps via Local Binary Features, a paper on CVPR 2014
 #How To Use
+####prepare: 
+you should change some image PATH in main.cpp and utils.cpp(function LoadImages) for correctly running the program.
+####compile:
 ```
 mkdir release
 cp CMakeList.txt ./release
@@ -13,10 +16,12 @@ make
 ```
 
 # Notes
-    you should change some image PATH in main.cpp and utils.cpp(function LoadImages) for correctly running the program.
-    I use the opencv face detection method, you can change to what you like, as long as using the same face detector in training and testing
-    it can both run under Windows and Unix-like systems.
-    it can reach 100~200 fps(even faster) on a single i7 core when the model is 5 or 6 layers deep,
+- The paper claims for 3000fps for 51 landmarks and high frame rates for different parameters, while my implementation can achieve several hundreds frame rates. What you should be AWARE of is that we both just CALCULATE the time for predicting the landmarks, EXCLUDES the time that detecting faces.
+- If you want to use for realtime videos, using OpenCV's face detection algorithm will achieve about 15fps, since 80% (even more time is used to get the bounding boxes of the faces in an image), so the bottleneck is the speed of face detection, not landmarks predicting. You are required to find a fast face detector(For example, [libfacedetection](https://github.com/ShiqiYu/libfacedetection))
+- I use the opencv face detection method, you can change to what you like, as long as using the same face detector in training and testing
+- it can both run under Windows and Unix-like systems.
+- it can reach 100~200 fps(even 300fps+, depending on the model) on a single i7 core when the model is 5 or 6 layers deep, predicting 68 landmarks. The speed will much faster when you reduce the 68 landmarks to 29, since it uses less parameters.
+- for a 68 landmarks model, the trained model file(storing all the parameters) will be around 150M, while it is 40M for a 29 landmarks model. 
 
 # Results Image:
 ###1. first use the mean shape for initial shape:
