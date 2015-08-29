@@ -32,10 +32,10 @@ make
 
 
 # Results Image:
-###1. first use the mean shape for initial shape:
-![](./initial.png)
-###2. detect the face
+###1. detect the face
 ![](./detect.png)
+###2. first use the mean shape for initial shape:
+![](./initial.png)
 ###3. predict the face landmarks by refine the initial shape
 ![](./final.png)
 
