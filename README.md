@@ -45,6 +45,7 @@ make
 - I have already develop the multithread one, but the time for predicting one image is slower than sequential one, since creating and destroying threads cost more time.
 - I will optimize it and update it later.
 - Second, I will also develop a version on GPU, and will also upload later.
+
 # THANKS
 Mang thanks goes to those appreciate my work.
 
