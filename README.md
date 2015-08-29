@@ -46,7 +46,7 @@ make
 - I will optimize it and update it later.
 - Second, I will also develop a version on GPU, and will also upload later.
 
-# THANKS
-Mang thanks goes to those appreciate my work.
+# THANKS and More
+Many thanks goes to those appreciate my work.
 
 if you have any question, contact me at declanxu@gmail.com or declanxu@126.com, THANKS.
