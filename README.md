@@ -1,9 +1,15 @@
-# face alignment at 3000fps
+# Face Alignment at 3000fps
 It is an implementation of Face Alignment at 3000fps via Local Binary Features, a paper on CVPR 2014
 #How To Use
-####prepare: 
-you should change some image PATH in main.cpp and utils.cpp(function LoadImages) for correctly running the program.
-####compile:
+####Requirements:
+1. OpenCV(I just use the basic structures of OpenCV, like cv::Mat, cv::Point)
+2. cmake
+
+####Prepare: 
+1. you should change some image PATH in main.cpp and utils.cpp(function LoadImages) for correctly running the program.
+2. set appropriate parameters in Train() (in the file of main.cpp)
+
+####Compile:
 ```
 mkdir release
 cp CMakeList.txt ./release
@@ -22,6 +28,8 @@ make
 - it can both run under Windows and Unix-like systems.
 - it can reach 100~200 fps(even 300fps+, depending on the model) on a single i7 core when the model is 5 or 6 layers deep, predicting 68 landmarks. The speed will much faster when you reduce the 68 landmarks to 29, since it uses less parameters.
 - for a 68 landmarks model, the trained model file(storing all the parameters) will be around 150M, while it is 40M for a 29 landmarks model. 
+- the results of the model is acceptable for me, deeper and larger random forest will results better results, but with lower speed. 
+
 
 # Results Image:
 ###1. first use the mean shape for initial shape:
@@ -33,9 +41,11 @@ make
 
 
 # Future Development
-	I have add up the openMP to use multithread for faster training, it is really fast, takes an hour when the model is 5 layers deep and 10 trees in each forest with about 8000+ augmented images.
-    I have already develop the multithread one, but the time for predicting one image is slower than sequential one, since creating and destroying threads cost more time.
-    I will optimize it and update it later.
-    Second, I will also develop a version on GPU, and will also upload later.
+- I have add up the openMP to use multithread for faster training, it is really fast, takes an hour when the model is 5 layers deep and 10 trees in each forest with about 8000+ augmented images.
+- I have already develop the multithread one, but the time for predicting one image is slower than sequential one, since creating and destroying threads cost more time.
+- I will optimize it and update it later.
+- Second, I will also develop a version on GPU, and will also upload later.
+# THANKS
+Mang thanks goes to those appreciate my work.
 
 if you have any question, contact me at declanxu@gmail.com or declanxu@126.com, THANKS.
