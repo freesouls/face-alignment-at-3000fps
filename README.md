@@ -2,7 +2,7 @@
 It is an implementation of Face Alignment at 3000fps via Local Binary Features, a paper on CVPR 2014
 
 # Interpret Paper 
-If you are a Chinese, you can go to my blog for more details. [link](http://freesouls.github.io/2015/08/30/caffe-implement-l2-normlization-layer/)
+If you are a Chinese, you can go to my blog for more details. [link](http://freesouls.github.io/2015/06/07/face-alignment-local-binary-feature/)
 
 # License
 If you use my work, please cite my name (Binbin Xu), Thanks in advance.
