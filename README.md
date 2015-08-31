@@ -1,5 +1,13 @@
 # Face Alignment at 3000fps
 It is an implementation of Face Alignment at 3000fps via Local Binary Features, a paper on CVPR 2014
+
+# Interpret Paper 
+If you are a Chinese, you can go to my blog for more details. [link](http://freesouls.github.io/2015/08/30/caffe-implement-l2-normlization-layer/)
+
+# License
+If you use my work, please cite my name (Binbin Xu), Thanks in advance.
+Caffe is released under the BSD 2-Clause license. The BVLC reference models are released for unrestricted use.
+
 #How To Use
 ####Requirements:
 1. OpenCV(I just use the basic structures of OpenCV, like cv::Mat, cv::Point)
