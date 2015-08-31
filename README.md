@@ -6,7 +6,7 @@ If you are a Chinese, you can go to my blog for more details. [link](http://free
 
 # License
 If you use my work, please cite my name (Binbin Xu), Thanks in advance.
-Caffe is released under the BSD 2-Clause license. The BVLC reference models are released for unrestricted use.
+This project is released under the BSD 2-Clause license.
 
 #How To Use
 ####Requirements:
