@@ -1,7 +1,7 @@
 # Face Alignment at 3000fps
-It is an implementation of Face Alignment at 3000fps via Local Binary Features, a paper on CVPR 2014
+It is an implementation of [Face Alignment at 3000fps via Local Binary Features](http://research.microsoft.com/en-US/people/yichenw/cvpr14_facealignment.pdf), a paper on CVPR 2014
 
-# Interpret Paper 
+# Interpret the Paper's details 
 If you are a Chinese, you can go to my blog for more details. [link](http://freesouls.github.io/2015/06/07/face-alignment-local-binary-feature/)
 
 # License
@@ -39,12 +39,12 @@ make
 - the results of the model is acceptable for me, deeper and larger random forest(you can change parameters like tree_depth, trees_num_per_forest_ and so on) will lead to better results, but with lower speed. 
 
 
-# Result & standard procedures of testing an image:
+# Results & standard procedures of testing an image:
 ###1. detect the face
 ![](./detect.png)
-###2. first use the mean shape for initial shape:
+###2. use the mean shape as the initial shape:
 ![](./initial.png)
-###3. predict the face landmarks by refine the initial shape
+###3. predict the landmarks
 ![](./final.png)
 
 
