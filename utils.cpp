@@ -147,7 +147,13 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 	//const std::vector<cv::Mat_<double> >& current_shapes,
 	std::vector<BoundingBox>& bboxes,
 	std::string file_names){
-
+	
+	// change this function to your needs
+	// it is the boundding box of the face, including the center point of the box
+	// for .box files I just calculate using another program before this LoadImage functions
+	// you can just use the face rectangle detected by opencv with a little effort calculating the center point's position yourself.
+	// delete un-neccessary lines, my codes are just an example
+	
     std::string fn_haar = "./../haarcascade_frontalface_alt2.xml";
     cv::CascadeClassifier haar_cascade;
     bool yes = haar_cascade.load(fn_haar);
