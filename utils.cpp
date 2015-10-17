@@ -185,11 +185,11 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
         //cv::Mat_<uchar> image = cv::imread((name + ".jpg").c_str(), 0);
         //cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape((name + ".pts").c_str());
 		if (image.cols > 2000){
-			cv::resize(image, image, cv::Size(image.rows / 3, image.cols / 3), 0, 0, cv::INTER_LINEAR);
+			cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
 			ground_truth_shape /= 3.0;
 		}
 		else if (image.cols > 1400 && image.cols <= 2000){
-			cv::resize(image, image, cv::Size(image.rows / 2, image.cols / 2), 0, 0, cv::INTER_LINEAR);
+			cv::resize(image, image, cv::Size(image.cols / 2, image.rows / 2), 0, 0, cv::INTER_LINEAR);
 			ground_truth_shape /= 2.0;
 		}
 
