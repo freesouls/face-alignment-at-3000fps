@@ -187,11 +187,11 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
         /* // if you use the following line, the resized image and resized ground_truth may not match, 
            // for it is a rounded Integer when using image.rows/3, not a float
 		if (image.cols > 2000){
-			cv::resize(image, image, cv::Size(image.rows / 3, image.cols / 3), 0, 0, cv::INTER_LINEAR);
+			cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
 			ground_truth_shape /= 3.0;
 		}
 		else if (image.cols > 1400 && image.cols <= 2000){
-			cv::resize(image, image, cv::Size(image.rows / 2, image.cols / 2), 0, 0, cv::INTER_LINEAR);
+			cv::resize(image, image, cv::Size(image.cols / 2, image.rows / 2), 0, 0, cv::INTER_LINEAR);
 			ground_truth_shape /= 2.0;
 		}
 	*/
