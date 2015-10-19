@@ -28,7 +28,21 @@ make
 ./application test ModelName # when testing 
 ./application test ModelName imageName # when testing one image
 ```
-
+# Important
+If you try to resize the images, please use the codes below
+``` c++
+if (image.cols > 2000){
+    cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
+    ground_truth_shape /= 3.0;
+}
+```
+DO NOT SWAP "image.cols" and "image.rows", since "image.cols" is the width of the image, the following lines are WRONG!!!
+``` c++
+if (image.cols > 2000){
+    cv::resize(image, image, cv::Size(image.rows / 3, image.cols / 3), 0, 0, cv::INTER_LINEAR);
+    ground_truth_shape /= 3.0;
+}
+```
 # Notes
 - The paper claims for 3000fps for 51 landmarks and high frame rates for different parameters, while my implementation can achieve several hundreds frame rates. What you should be AWARE of is that we both just CALCULATE the time that predicting the landmarks, EXCLUDES the time that detecting faces.
 - If you want to use it for realtime videos, using OpenCV's face detector will achieve about 15fps, since 80% (even more time is used to get the bounding boxes of the faces in an image), so the bottleneck is the speed of face detection, not the speed of landmarks predicting. You are required to find a fast face detector(For example, [libfacedetection](https://github.com/ShiqiYu/libfacedetection))
