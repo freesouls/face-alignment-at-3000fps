@@ -167,25 +167,28 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 	//std::cout << name << std::endl;
 	while (fin >> name){
 		//std::cout << "reading file: " << name << std::endl;
-		//std::cout << name << std::endl;
+		std::cout << name << std::endl;
+		std::string pts = name.substr(0, name.length() - 3) + "pts";
 
-        cv::Mat_<uchar> image = cv::imread(("./../helen/trainset/" + name + ".jpg").c_str(), 0);
-        cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape(("./../helen/trainset/" + name + ".pts").c_str());
-        BoundingBox bbox;
-        std::ifstream fin;
-        fin.open(("./../helen/trainset/" + name + ".box").c_str());
-        fin >> bbox.start_x
-            >> bbox.start_y
-            >> bbox.width
-            >> bbox.height
-            >> bbox.center_x
-            >> bbox.center_y;
-        fin.close();
+        cv::Mat_<uchar> image = cv::imread(("./../dataset/helen/trainset/" + name).c_str(), 0);
+        cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape(("./../dataset/helen/trainset/" + pts).c_str());
+        
+        // BoundingBox bbox;
+        // std::ifstream fin;
+        // fin.open(("./../helen/trainset/" + name + ".box").c_str());
+        // fin >> bbox.start_x
+        //     >> bbox.start_y
+        //     >> bbox.width
+        //     >> bbox.height
+        //     >> bbox.center_x
+        //     >> bbox.center_y;
+        // fin.close();
 
         //cv::Mat_<uchar> image = cv::imread((name + ".jpg").c_str(), 0);
         //cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape((name + ".pts").c_str());
-        /* // if you use the following line, the resized image and resized ground_truth may not match, 
-           // for it is a rounded Integer when using image.rows/3, not a float
+        // if you use the following line, the resized image and resized ground_truth may not match, 
+        // for it is a rounded Integer when using image.rows/3, not a float
+
 		if (image.cols > 2000){
 			cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
 			ground_truth_shape /= 3.0;
@@ -194,20 +197,19 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 			cv::resize(image, image, cv::Size(image.cols / 2, image.rows / 2), 0, 0, cv::INTER_LINEAR);
 			ground_truth_shape /= 2.0;
 		}
-	*/
 
 //		BoundingBox bbox;
 //		bbox = GetBoundingBox(ground_truth_shape, image.cols, image.rows);
 
-        images.push_back(image);
-        ground_truth_shapes.push_back(ground_truth_shape);
-        bboxes.push_back(bbox);
-        count++;
-        if (count%100 == 0){
-            std::cout << count << " images loaded\n";
-            break;
-        }
-        continue;
+        // images.push_back(image);
+        // ground_truth_shapes.push_back(ground_truth_shape);
+        // bboxes.push_back(bbox);
+        // count++;
+        // if (count%100 == 0){
+            // std::cout << count << " images loaded\n";
+            // break;
+        // }
+        // continue;
 
         std::vector<cv::Rect> faces;// = DetectFaces(image);
         haar_cascade.detectMultiScale(image, faces, 1.1, 2, 0, cv::Size(30, 30));
@@ -237,7 +239,7 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
                 count++;
                 if (count%100 == 0){
                     std::cout << count << " images loaded\n";
-                    return;
+                    //return;
                 }
                 break;
             }
@@ -249,14 +251,29 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 }
 
 
+// double CalculateError(cv::Mat_<double>& ground_truth_shape, cv::Mat_<double>& predicted_shape){
+// 	cv::Mat_<double> temp;
+// 	double sum = 0;
+// 	for (int i = 0; i<ground_truth_shape.rows; i++){
+// 		sum += norm(ground_truth_shape.row(i) - predicted_shape.row(i));
+// 	}
+//     return sum / (ground_truth_shape.rows);
+// }
+
 double CalculateError(cv::Mat_<double>& ground_truth_shape, cv::Mat_<double>& predicted_shape){
-	cv::Mat_<double> temp;
-	double sum = 0;
-	for (int i = 0; i<ground_truth_shape.rows; i++){
-		sum += norm(ground_truth_shape.row(i) - predicted_shape.row(i));
-	}
-    return sum / (ground_truth_shape.rows);
+    cv::Mat_<double> temp;
+    temp = ground_truth_shape.rowRange(36, 41)-ground_truth_shape.rowRange(42, 47);
+    double x =mean(temp.col(0))[0];
+    double y = mean(temp.col(1))[1];
+    double interocular_distance = sqrt(x*x+y*y);
+    double sum = 0;
+    for (int i=0;i<ground_truth_shape.rows;i++){
+        sum += norm(ground_truth_shape.row(i)-predicted_shape.row(i));
+    }
+    return sum/(ground_truth_shape.rows*interocular_distance);
 }
+
+
 
 void DrawPredictImage(cv::Mat_<uchar> image, cv::Mat_<double>& shape){
 	for (int i = 0; i < shape.rows; i++){

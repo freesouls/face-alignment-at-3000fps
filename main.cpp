@@ -33,7 +33,7 @@ void Test(const char* ModelName){
 	std::vector<cv::Mat_<uchar> > images;
 	std::vector<cv::Mat_<double> > ground_truth_shapes;
 	std::vector<BoundingBox> bboxes;
-	std::string file_names = "./../helen/trainset/bboxes.txt";
+	std::string file_names = "./../dataset/helen/train_jpgs.txt";
 	LoadImages(images, ground_truth_shapes, bboxes, file_names);
     struct timeval t1, t2;
     gettimeofday(&t1, NULL);
@@ -65,11 +65,11 @@ void TestImage(const char* name, CascadeRegressor& rg){
 	std::cout << "detector: " << yes << std::endl;
 	cv::Mat_<uchar> image = cv::imread(name, 0);
 		if (image.cols > 2000){
-			cv::resize(image, image, cv::Size(image.rows / 3, image.cols / 3), 0, 0, cv::INTER_LINEAR);
+			cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
 			//ground_truth_shape /= 3.0;
 		}
 		else if (image.cols > 1400 && image.cols <= 2000){
-			cv::resize(image, image, cv::Size(image.rows / 2, image.cols / 2), 0, 0, cv::INTER_LINEAR);
+			cv::resize(image, image, cv::Size(image.cols / 2, image.rows / 2), 0, 0, cv::INTER_LINEAR);
 			//ground_truth_shape /= 2.0;
 		}
     std::vector<cv::Rect> faces;
@@ -117,11 +117,11 @@ void Train(const char* ModelName){
 	std::vector<cv::Mat_<uchar> > images;
 	std::vector<cv::Mat_<double> > ground_truth_shapes;
 	std::vector<BoundingBox> bboxes;
-    std::string file_names = "./../helen/trainset/1.txt";
+    std::string file_names = "./../dataset/helen/train_jpgs.txt";
 	LoadImages(images, ground_truth_shapes, bboxes, file_names);
 
 	Parameters params;
-    params.local_features_num_ = 500;
+    params.local_features_num_ = 300;
 	params.landmarks_num_per_face_ = 68;
     params.regressor_stages_ = 6;
 	params.local_radius_by_stage_.push_back(0.4);
