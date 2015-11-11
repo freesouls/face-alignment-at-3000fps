@@ -162,6 +162,17 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 	std::cout << "loading images\n";
 	std::ifstream fin;
 	fin.open(file_names.c_str(), std::ifstream::in);
+	// train_jpgs.txt contains all the paths for each image, one image per line
+    // for example: in Linux you can use ls *.jpg > train_jpgs.txt to get the paths
+    // the file looks like as below
+    /*
+    	1.jpg
+    	2.jpg
+    	3.jpg
+    	...
+    	1000.jpg
+    */
+	
 	std::string name;
 	int count = 0;
 	//std::cout << name << std::endl;
