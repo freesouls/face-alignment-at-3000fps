@@ -118,6 +118,17 @@ void Train(const char* ModelName){
 	std::vector<cv::Mat_<double> > ground_truth_shapes;
 	std::vector<BoundingBox> bboxes;
     std::string file_names = "./../dataset/helen/train_jpgs.txt";
+    // train_jpgs.txt contains all the paths for each image, one image per line
+    // for example: in Linux you can use ls *.jpg > train_jpgs.txt to get the paths
+    // the file looks like as below
+    /*
+    	1.jpg
+    	2.jpg
+    	3.jpg
+    	...
+    	1000.jpg
+    */
+    
 	LoadImages(images, ground_truth_shapes, bboxes, file_names);
 
 	Parameters params;
@@ -144,20 +155,6 @@ void Train(const char* ModelName){
 
 int main(int argc, char* argv[])
 {
-//    int a[10];
-//    #pragma omp parallel for
-//    for(int i=0; i < 10; i++){
-//        int index = 0;
-//        for(int j = i; j<10; j++){
-//            index += j;
-//        }
-//        a[i] = index;
-//        std::cout << i << " :curent: " << index << std::endl;
-//    }
-
-//    for(int i=0; i < 10; i++){
-//        std::cout << i << " :final: " << a[i] << std::endl;
-//    }
 	if (argc >= 3)
 	{
 		if (strcmp(argv[1], "train") == 0)
