@@ -44,7 +44,7 @@ if (image.cols > 2000){
 }
 ```
 ##what are .pts files
-[here](http://ibug.doc.ic.ac.uk/resources/300-W/) you can download dataset with .pts files, each .pts file contains 68 landmarks positions in the image
+[here](http://ibug.doc.ic.ac.uk/resources/300-W/) you can download dataset with .pts files, each .pts file contains 68 landmarks positions of each face
 
 ##what are .box files
 .box is just the bounding box of a face, including the center point of the box, you can just use the face rectangle detected by opencv alogrithm with a little effort calculating the center point's position yourself. Example codes  are like below
