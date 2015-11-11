@@ -173,21 +173,6 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
         cv::Mat_<uchar> image = cv::imread(("./../dataset/helen/trainset/" + name).c_str(), 0);
         cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape(("./../dataset/helen/trainset/" + pts).c_str());
         
-        // BoundingBox bbox;
-        // std::ifstream fin;
-        // fin.open(("./../helen/trainset/" + name + ".box").c_str());
-        // fin >> bbox.start_x
-        //     >> bbox.start_y
-        //     >> bbox.width
-        //     >> bbox.height
-        //     >> bbox.center_x
-        //     >> bbox.center_y;
-        // fin.close();
-
-        //cv::Mat_<uchar> image = cv::imread((name + ".jpg").c_str(), 0);
-        //cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape((name + ".pts").c_str());
-        // if you use the following line, the resized image and resized ground_truth may not match, 
-        // for it is a rounded Integer when using image.rows/3, not a float
 
 		if (image.cols > 2000){
 			cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
@@ -198,25 +183,13 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 			ground_truth_shape /= 2.0;
 		}
 
-//		BoundingBox bbox;
-//		bbox = GetBoundingBox(ground_truth_shape, image.cols, image.rows);
-
-        // images.push_back(image);
-        // ground_truth_shapes.push_back(ground_truth_shape);
-        // bboxes.push_back(bbox);
-        // count++;
-        // if (count%100 == 0){
-            // std::cout << count << " images loaded\n";
-            // break;
-        // }
-        // continue;
-
-        std::vector<cv::Rect> faces;// = DetectFaces(image);
+        std::vector<cv::Rect> faces;
         haar_cascade.detectMultiScale(image, faces, 1.1, 2, 0, cv::Size(30, 30));
 
-         for (int i = 0; i < faces.size(); i++){
+        for (int i = 0; i < faces.size(); i++){
             cv::Rect faceRec = faces[i];
-            if (ShapeInRect(ground_truth_shape, faceRec)){
+            if (ShapeInRect(ground_truth_shape, faceRec)){ 
+            	// check if the detected face rectangle is in the ground_truth_shape
                 images.push_back(image);
                 ground_truth_shapes.push_back(ground_truth_shape);
                 BoundingBox bbox;
@@ -227,19 +200,9 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
                 bbox.center_x = bbox.start_x + bbox.width / 2.0;
                 bbox.center_y = bbox.start_y + bbox.height / 2.0;
                 bboxes.push_back(bbox);
-//		 		std::ofstream fout;
-//		 		fout.open(name + ".box", std::fstream::in);
-//		 		fout << bbox.start_x << " "
-//		 			<< bbox.start_y << " "
-//		 			<< bbox.width << " "
-//		 			<< bbox.height << " "
-//		 			<< bbox.center_x << " "
-//		 			<< bbox.center_y << std::endl;
-//		 		fout.close();
                 count++;
                 if (count%100 == 0){
                     std::cout << count << " images loaded\n";
-                    //return;
                 }
                 break;
             }
