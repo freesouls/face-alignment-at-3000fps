@@ -43,6 +43,21 @@ if (image.cols > 2000){
     ground_truth_shape /= 3.0;
 }
 ```
+##what are .pts files
+[here](http://ibug.doc.ic.ac.uk/resources/300-W/) you can download dataset with .pts files, each .pts file contains 68 landmarks positions in the image
+
+##what are .box files
+.box is just the bounding box of a face, including the center point of the box, you can just use the face rectangle detected by opencv alogrithm with a little effort calculating the center point's position yourself. Example codes  are like below
+``` c++
+BoundingBox bbox;
+bbox.start_x = faceRec.x; // faceRec is a cv::Rect, containing the rectangle of the face
+bbox.start_y = faceRec.y;
+bbox.width = faceRec.width;
+bbox.height = faceRec.height;
+bbox.center_x = bbox.start_x + bbox.width / 2.0;
+bbox.center_y = bbox.start_y + bbox.height / 2.0;
+bboxes.push_back(bbox);
+```
 # Notes
 - The paper claims for 3000fps for 51 landmarks and high frame rates for different parameters, while my implementation can achieve several hundreds frame rates. What you should be AWARE of is that we both just CALCULATE the time that predicting the landmarks, EXCLUDES the time that detecting faces.
 - If you want to use it for realtime videos, using OpenCV's face detector will achieve about 15fps, since 80% (even more time is used to get the bounding boxes of the faces in an image), so the bottleneck is the speed of face detection, not the speed of landmarks predicting. You are required to find a fast face detector(For example, [libfacedetection](https://github.com/ShiqiYu/libfacedetection))
