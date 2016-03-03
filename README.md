@@ -28,6 +28,33 @@ make
 ./application test ModelName # when testing 
 ./application test ModelName imageName # when testing one image
 ```
+
+####Parameters:
+Setup Parameters like this before training, the following is just an example, not the best parameters because different dataset may have different parameters to achieve best performance.
+```
+Parameters params;
+params.local_features_num_ = 300;
+params.landmarks_num_per_face_ = 68;
+params.regressor_stages_ = 6;
+params.local_radius_by_stage_.push_back(0.4);
+params.local_radius_by_stage_.push_back(0.3);
+params.local_radius_by_stage_.push_back(0.2);
+params.local_radius_by_stage_.push_back(0.1);
+params.local_radius_by_stage_.push_back(0.08);
+params.local_radius_by_stage_.push_back(0.05);
+params.tree_depth_ = 5;
+params.trees_num_per_forest_ = 8;
+params.initial_guess_ = 5;
+```
+
+**Note**
+there is another parameter in `randomforest.cpp`, line 95: 
+
+```
+double overlap = 0.4; // you can set it to 0.3, 0.25 etc
+```
+each tree in the forest will be constructed using about **`N*(1-overlap+overlap/T)`** examples, where `N` is total number of images(if your train data set size is 2000, and `initial_guess_` is 5, then N = 2000*(5+1)=12000 images), `T` is the number of trees in each forest.
+
 # Important
 If you try to resize the images, please use the codes below
 ``` c++
