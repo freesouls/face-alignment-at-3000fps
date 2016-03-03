@@ -612,7 +612,7 @@ void CascadeRegressor::SaveCascadeRegressor(std::string ModelName){
 
 
 void Regressor::LoadRegressor(std::string ModelName, int stage){
-	char buffer[50];
+	char buffer[500];
     sprintf(buffer, "%s_%d_regressor.txt", ModelName.c_str(), stage);
 	std::ifstream fin;
 	fin.open(buffer, std::fstream::in);
@@ -644,7 +644,7 @@ void Regressor::ConstructLeafCount(){
 }
 
 void Regressor::SaveRegressor(std::string ModelName, int stage){
-	char buffer[50];
+	char buffer[500];
 	//strcpy(buffer, ModelName.c_str());
 	assert(stage == stage_);
     sprintf(buffer, "%s_%d_regressor.txt", ModelName.c_str(), stage);
