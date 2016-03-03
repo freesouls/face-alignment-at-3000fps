@@ -53,7 +53,7 @@ there is another parameter in `randomforest.cpp`, line 95:
 ```
 double overlap = 0.4; // you can set it to 0.3, 0.25 etc
 ```
-each tree in the forest will be constructed using about **`N*(1-overlap+overlap/T)`** examples, where `N` is total number of images(if your train data set size is 2000, and `initial_guess_` is 5, then N = 2000*(5+1)=12000 images), `T` is the number of trees in each forest.
+each tree in the forest will be constructed using about **`N*(1-overlap+overlap/T)`** examples, where `N` is the total number of images after augmentation(if your train data set size is 2000, and `initial_guess_` is 5, then N = 2000*(5+1)=12000 images), `T` is the number of trees in each forest.
 
 # Important
 If you try to resize the images, please use the codes below
