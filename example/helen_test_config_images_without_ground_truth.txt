@@ -1,0 +1,5 @@
+helenModel
+0
+1
+../example/helen/testset/
+../example/helen_test_images_list_without_ground_truth.txt
