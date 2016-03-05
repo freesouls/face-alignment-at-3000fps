@@ -68,12 +68,14 @@ make
 ```
 the training starts, you just need to see the output
 
-4. testing images those have ground truth shapes
+4. testing images that have ground truth shapes
+
 take helen testset for example.
 ```
 ./application test ../example/helen_test_config_images_with_ground_truth.txt
 ```
-5. testing images those do not have ground truth shapes
+5. testing images that do not have ground truth shapes
+
 take helen testset for example, asumming that we do not known the landmarks' annotations.
 ```
 ./application test ../example/helen_test_config_images_without_ground_truth.txt
@@ -97,7 +99,7 @@ in `example/` there is a file named `helen_test_images_list_without_ground_truth
 2437904540_1.jpg
 ...
 ```
-after we trained a new model, we want to test on new images, so just put each name in the image_list.txt
+after we trained a new model, we want to test new images, so just put each image's name in the image_list.txt
 
 ###Train configure file
 ```
@@ -110,25 +112,25 @@ helenModel  // the model name, name what you like
 3           // params.initial_guess_ = 5;
 0.3         // params.overlap_ = 0.3;
 0.29        // first stage lacal radius when samples the pixel difference feature positions
-0.21
+0.21        // second stage local radius 
 0.16
 0.12
 0.08
-0.04
-2                                           // number of dataset for training
-../example/helen/trainset/                  // root folder that contains the *.jpgs and *.pts
-../example/helen_train_images_list.txt      // images list
-../example/otherdataset/
-../example/otherdatset_train_images_list.txt
-1                                           // number of dataset for validation
-../example/helen/testset/                   // root folder that contains the *.jpgs and *.pts
+0.04        // sixth stage local radius
+2           // number of datasets for training
+../example/helen/trainset/                      // root folder that contains the *.jpgs and *.pts of the first dataset
+../example/helen_train_images_list.txt          // images list of the first dataset
+../example/otherdataset/                        // root folder of the second dataset
+../example/otherdatset_train_images_list.txt    // images list of the second dataset
+1                                               // number of datasets for validation
+../example/helen/testset/                       // root folder that contains the *.jpgs and *.pts
 ../example/helen_test_images_list_with_ground_truth.txt // images list
 ```
-When training, this configure file will be parsed, and images under the root folder will be loaded. You can refer to `main.cpp` for details how the configure file is parsed.
+When training, this configure file will be parsed, and images will be loaded. You can refer to `main.cpp` for details how the configure file is parsed.
 
-the parameters setting above is just an example, you have to change to fine tune your own model for your dataset.
+the parameters setting above is just an example, you have to fine tune the parameters in training for your dataset.
 
-off course, you can still set the parameters like this directly in the codes. 
+off course, you can still set the parameters like this directly in `main.cpp`. 
 ```
 Parameters params;
 params.local_features_num_ = 300;
@@ -149,8 +151,8 @@ params.initial_guess_ = 5;
 `helen_test_config_images_with_ground_truth.txt`
 ```
 helenModel      // model name that we want to use after we have trained
-1               // 1 means the image list have *.pts, we known the ground_truth_shapes of the images
-1               // number of dataset we want to be test
+1               // 1 means we know the ground_truth_shapes of the images
+1               // number of datasets we want to be tested
 ../example/helen/testset/   // root folder for testset
 ../example/helen_test_images_list_with_ground_truth.txt // image list
 ```
@@ -158,14 +160,14 @@ helenModel      // model name that we want to use after we have trained
 `helen_test_config_images_without_ground_truth.txt`
 ```
 helenModel      // model name that we want to use after we have trained
-0               // 0 means we do not known the ground_truth_shapes of the images
-1               // number of dataset we want to be test
+0               // 0 means we do not know the ground_truth_shapes of the images
+1               // number of datasets we want to be tested
 ../example/helen/testset/   // root folder for testset
 ../example/helen_test_images_list_without_ground_truth.txt // image list
 ```
 
 **Note**
-there is another parameter in `randomforest.cpp`, line 95: 
+there is a parameter in `randomforest.cpp`, line 95: 
 
 ```
 double overlap = 0.3; // you can set it to 0.4, 0.25 etc
@@ -203,12 +205,12 @@ bbox.center_y = bbox.start_y + bbox.height / 2.0;
 bboxes.push_back(bbox);
 ```
 # Notes
-- if your dataset's landmark annotaion file is different from `.pts` in `helen` dataset, you have to re-write `LoadGroundTruthShape` in `utils.cpp`
+- Re-write `LoadGroundTruthShape` and `LoadImages` in `utils.cpp` to your own needs.
 - The paper claims for 3000fps for 51 landmarks and high frame rates for different parameters, while my implementation can achieve several hundreds frame rates. What you should be AWARE of is that we both just CALCULATE the time that predicting the landmarks, EXCLUDES the time that detecting faces.
 - If you want to use it for realtime videos, using OpenCV's face detector will achieve about 15fps, since 80% (even more time is used to get the bounding boxes of the faces in an image), so the bottleneck is the speed of face detection, not the speed of landmarks predicting. You are required to find a fast face detector(For example, [libfacedetection](https://github.com/ShiqiYu/libfacedetection))
 - In my project, I use the opencv face detector, you can change to what you like as long as using the same face detector in training and testing
 - it can both run under Windows(use 64bits for large datasets, 32bits may encounter memory problem) and Unix-like(preferred) systems.
-- it can reach 100~200 fps(even 300fps+, depending on the model) when predicting 68 landmarks on a single i7 core with the model 5 or 6 layers deep. The speed will be much faster when you reduce 68 landmarks to 29, since it uses less(for example, only 1/4 in Global Regression, if you fix the random forest parameteres) parameters.
+- it can reach 100~200 fps(even 300fps+, depending on the model complexity) when predicting 68 landmarks on a single i7 core with the model 5 or 6 layers deep. The speed will be much faster when you reduce 68 landmarks to 29, since it uses less(for example, only 1/4 in Global Regression, if you fix the random forest parameteres) parameters.
 - for a 68 landmarks model, the trained model file(storing all the parameters) will be around 150M, while it is 40M for a 29 landmarks model. 
 - the results of the model is acceptable for me, deeper and larger random forest(you can change parameters like tree_depth, trees_num_per_forest_ and so on) will lead to better results, but with lower speed. 
 
@@ -223,7 +225,7 @@ bboxes.push_back(bbox);
 ###4. bad case
 ![](./bad_case.png)
 
-when you test new images without known the ground truth shape, you may encounter problems like this, actually it is **NOT** face alignment's problem, for the I just use OpenCV's default face detector, I choose the first the bounding box rectangle returned(line 345 in `utils.cpp`: `cv::Rect faceRec = faces[0];`), you can use all the bounding box by re-writing the function. And some time the face detector failed to detect a face in the image, your are required to use other face detector.
+when you test new images that do not have ground truth annotations, you may encounter problems like this, actually it is **NOT** face alignment's problem, for I just use OpenCV's default face detector, and choose the first bounding box rectangle returned by OpenCV(line 345 in `utils.cpp`: `cv::Rect faceRec = faces[0];`), you can use all the bounding box by re-writing the function. And sometimes the face detector may fail to detect a face in the image.
 
 # Future Development
 - I have add up the openMP to use multithread for faster training, it is really fast, takes an hour when the model is 5 layers deep and 10 trees in each forest with about 8000+ augmented images.
