@@ -572,7 +572,8 @@ void CascadeRegressor::LoadCascadeRegressor(std::string ModelName){
 		>> params_.regressor_stages_
 		>> params_.tree_depth_
 		>> params_.trees_num_per_forest_
-		>> params_.initial_guess_;
+		>> params_.initial_guess_
+		>> params_.overlap_;
 
 	std::vector<double> local_radius_by_stage;
 	local_radius_by_stage.resize(params_.regressor_stages_);
@@ -603,7 +604,8 @@ void CascadeRegressor::SaveCascadeRegressor(std::string ModelName){
 		<< params_.regressor_stages_ << " "
 		<< params_.tree_depth_ << " "
 		<< params_.trees_num_per_forest_ << " "
-		<< params_.initial_guess_ << std::endl;
+		<< params_.initial_guess_ " "
+		<< params_.overlap_ << std::endl;
 	for (int i = 0; i < params_.regressor_stages_; i++){
 		fout << params_.local_radius_by_stage_[i] << std::endl;
 	}
