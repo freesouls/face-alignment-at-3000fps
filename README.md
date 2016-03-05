@@ -40,7 +40,7 @@ See next section for details.
 
 In pervious versions, when setting the parameters, we have to write hard code in main.cpp, now I changed it to read from a configure file without having to recompile the codes
 
-## 3. Add Helen Example for Better Understanding
+## 3. Add Helen Dataset Example for Better Understanding
 in the `example` folder, there are some configure files. See next section for details.
 
 # Interpret the Paper's details 
@@ -222,7 +222,7 @@ bboxes.push_back(bbox);
 ![](./final.png)
 ###4. bad case
 ![](./bad_case.png)
- it is caused by the face detector.
+
 when you test new images without known the ground truth shape, you may encounter problems like this, actually it is **NOT** face alignment's problem, for the I just use OpenCV's default face detector, I choose the first the bounding box rectangle returned(line 345 in `utils.cpp`: `cv::Rect faceRec = faces[0];`), you can use all the bounding box by re-writing the function. And some time the face detector failed to detect a face in the image, your are required to use other face detector.
 
 # Future Development
