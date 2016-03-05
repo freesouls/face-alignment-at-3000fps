@@ -126,7 +126,9 @@ helenModel  // the model name, name what you like
 ```
 When training, this configure file will be parsed, and images under the root folder will be loaded. You can refer to `main.cpp` for details how the configure file is parsed.
 
-off course you can still set the parameters like this directly in the codes. 
+the parameters setting above is just an example, you have to change to fine tune your own model for your dataset.
+
+off course, you can still set the parameters like this directly in the codes. 
 ```
 Parameters params;
 params.local_features_num_ = 300;
@@ -201,6 +203,7 @@ bbox.center_y = bbox.start_y + bbox.height / 2.0;
 bboxes.push_back(bbox);
 ```
 # Notes
+- if your dataset's landmark annotaion file is different from `.pts` in `helen` dataset, you have to re-write `LoadGroundTruthShape` in `utils.cpp`
 - The paper claims for 3000fps for 51 landmarks and high frame rates for different parameters, while my implementation can achieve several hundreds frame rates. What you should be AWARE of is that we both just CALCULATE the time that predicting the landmarks, EXCLUDES the time that detecting faces.
 - If you want to use it for realtime videos, using OpenCV's face detector will achieve about 15fps, since 80% (even more time is used to get the bounding boxes of the faces in an image), so the bottleneck is the speed of face detection, not the speed of landmarks predicting. You are required to find a fast face detector(For example, [libfacedetection](https://github.com/ShiqiYu/libfacedetection))
 - In my project, I use the opencv face detector, you can change to what you like as long as using the same face detector in training and testing
@@ -217,7 +220,10 @@ bboxes.push_back(bbox);
 ![](./initial.png)
 ###3. predict the landmarks
 ![](./final.png)
-
+###4. bad case
+![](./bad_case.png)
+ it is caused by the face detector.
+when you test new images without known the ground truth shape, you may encounter problems like this, actually it is **NOT** face alignment's problem, for the I just use OpenCV's default face detector, I choose the first the bounding box rectangle returned(line 345 in `utils.cpp`: `cv::Rect faceRec = faces[0];`), you can use all the bounding box by re-writing the function. And some time the face detector failed to detect a face in the image, your are required to use other face detector.
 
 # Future Development
 - I have add up the openMP to use multithread for faster training, it is really fast, takes an hour when the model is 5 layers deep and 10 trees in each forest with about 8000+ augmented images.
