@@ -36,12 +36,12 @@ Validation at stage: 5
 Validation error: 17.5538, mean error: 0.0564431
 ```
 ## 2. Change to Read Parameters from Configure File
-For details please see **section** `Configure Files`.
+See next section for details.
 
-In pervious version, we have to write hard code in main.cpp, now I changed it to read from a configure file without having to recompile the codes
+In pervious versions, when setting the parameters, we have to write hard code in main.cpp, now I changed it to read from a configure file without having to recompile the codes
 
 ## 3. Add Helen Example for Better Understanding
-in the `example` folder, there are some configure files
+in the `example` folder, there are some configure files. See next section for details.
 
 # Interpret the Paper's details 
 If you are a Chinese, you can go to my blog for more details. [link](http://freesouls.github.io/2015/06/07/face-alignment-local-binary-feature/)
@@ -79,7 +79,7 @@ take helen testset for example, asumming that we do not known the landmarks' ann
 ./application test ../example/helen_test_config_images_without_ground_truth.txt
 ```
 
-##Configure Files Explaination:
+##Configure Files Explanation:
 ###Image List
 in `example/` there is a file named `helen_test_images_list_with_ground_truth.txt`, the content is like this:
 ```
