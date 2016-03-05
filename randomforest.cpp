@@ -59,13 +59,13 @@ bool RandomForest::TrainForest(//std::vector<cv::Mat_<double>>& regression_targe
 	}
 	//std::cout << "get pixel differences" << std::endl;
 	cv::Mat_<int> pixel_differences(local_features_num_, augmented_images_index.size()); // matrix: features*images
-	
+
 	for (int i = 0; i < augmented_images_index.size(); i++){
-		
+
 		cv::Mat_<double> rotation = rotations[i];
 		double scale = scales[i];
 		//getSimilarityTransform(ProjectShape(augmented_current_shapes[i], augmented_bboxes[i]),mean_shape_, rotation, scale);
-		
+
 		for (int j = 0; j < local_features_num_; j++){
 			FeatureLocations pos = local_position_[j];
 			double delta_x = rotation(0, 0)*pos.start.x + rotation(0, 1)*pos.start.y;
@@ -86,13 +86,19 @@ bool RandomForest::TrainForest(//std::vector<cv::Mat_<double>>& regression_targe
 			real_y = delta_y + augmented_current_shapes[i](landmark_index_, 1);
 			real_x = std::max(0, std::min(real_x, images[augmented_images_index[i]].cols - 1)); // which cols
 			real_y = std::max(0, std::min(real_y, images[augmented_images_index[i]].rows - 1)); // which rows
-			pixel_differences(j, i) = tmp - (int)images[augmented_images_index[i]](real_y, real_x); 
+			pixel_differences(j, i) = tmp - (int)images[augmented_images_index[i]](real_y, real_x);
 		}
 	}
 	// train Random Forest
 	// construct each tree in the forest
-	
-	double overlap = 0.4;
+
+	double overlap = 0.3;
+	if (overlap_ >= 1.0 && overlap_ <= 0) {
+		std::cout << "your setting of overlap is not in the range (0, 1)\n setting overlap to 0.3" << std::endl;
+	}
+	else {
+		overlap = overlap_;
+	}
 	int step = floor(((double)augmented_images_index.size())*overlap / (trees_num_per_forest_ - 1));
 	trees_.clear();
 	all_leaf_nodes_ = 0;
@@ -153,7 +159,7 @@ Node* RandomForest::BuildTree(std::set<int>& selected_indexes, cv::Mat_<int>& pi
 	}
 }
 
-int RandomForest::FindSplitFeature(Node* node, std::set<int>& selected_indexes, 
+int RandomForest::FindSplitFeature(Node* node, std::set<int>& selected_indexes,
 	cv::Mat_<int>& pixel_differences, std::vector<int>& images_indexes, std::vector<int>& left_indexes, std::vector<int>& right_indexes){
 	std::vector<int> val;
 	//cv::Mat_<int> sorted_fea;
@@ -161,7 +167,7 @@ int RandomForest::FindSplitFeature(Node* node, std::set<int>& selected_indexes,
 	current_time = time(0);
 	cv::RNG rd(current_time);
 	int threshold;
-	double var = -1000000000000.0; // use -DBL_MAX will be better 
+	double var = -1000000000000.0; // use -DBL_MAX will be better
 	int feature_index = -1;
 	std::vector<int> tmp_left_indexes, tmp_right_indexes;
 	//int j = 0, tmp_index;
@@ -203,7 +209,7 @@ int RandomForest::FindSplitFeature(Node* node, std::set<int>& selected_indexes,
 					Ey_rc += value;
 				}
 			}
-			if (tmp_left_indexes.size() == 0){ 
+			if (tmp_left_indexes.size() == 0){
 				var_lc = 0.0;
 			} else{
 				var_lc = Ex_2_lc / tmp_left_indexes.size() - pow(Ex_lc / tmp_left_indexes.size(), 2)
@@ -225,7 +231,7 @@ int RandomForest::FindSplitFeature(Node* node, std::set<int>& selected_indexes,
 			}
 		}
 	}
-	if (feature_index != -1) // actually feature_index will never be -1 
+	if (feature_index != -1) // actually feature_index will never be -1
 	{
 		if (left_indexes.size() == 0 || right_indexes.size() == 0){
 			node->is_leaf_ = true; // the node can contain all the samples
@@ -237,21 +243,21 @@ int RandomForest::FindSplitFeature(Node* node, std::set<int>& selected_indexes,
 		selected_indexes.insert(feature_index);
 		return 0;
 	}
-	
+
 	return -1;
 }
 
 int RandomForest::MarkLeafIdentity(Node* node, int count){
 	std::stack<Node*> s;
-	Node* p_current = node; 
-	
+	Node* p_current = node;
+
 	if (node == NULL){
 		return count;
 	}
 	// the node in the tree is either leaf node or internal node that has both left and right children
 	while (1)//p_current || !s.empty())
 	{
-		
+
 		if (p_current->is_leaf_){
 			p_current->leaf_identity = count;
 			count++;
@@ -265,14 +271,14 @@ int RandomForest::MarkLeafIdentity(Node* node, int count){
 			s.push(p_current);
 			p_current = p_current->left_child_;
 		}
-		
+
 		/*while (!p_current && !s.empty()){
 			p_current = s.top();
 			s.pop();
-			p_current = p_current->right_child_; 
+			p_current = p_current->right_child_;
 		}*/
 	}
-	
+
 }
 
 cv::Mat_<double> RandomForest::GetBinaryFeatures(const cv::Mat_<double>& image,
@@ -330,7 +336,7 @@ int RandomForest::GetBinaryFeatureIndex(int tree_index, const cv::Mat_<double>& 
 
 int RandomForest::GetNodeOutput(Node* node, const cv::Mat_<double>& image,
 	const BoundingBox& bbox, const cv::Mat_<double>& current_shape, const cv::Mat_<double>& rotation, const double& scale){
-	
+
 	FeatureLocations& pos = node->feature_locations_;
 	double delta_x = rotation(0, 0)*pos.start.x + rotation(0, 1)*pos.start.y;
 	double delta_y = rotation(1, 0)*pos.start.x + rotation(1, 1)*pos.start.y;
@@ -366,12 +372,13 @@ RandomForest::RandomForest(Parameters& param, int landmark_index, int stage, std
 	tree_depth_ = param.tree_depth_;
 	trees_num_per_forest_ = param.trees_num_per_forest_;
 	local_radius_ = param.local_radius_by_stage_[stage_];
+	overlap_ = param.overlap_;
 	//mean_shape_ = param.mean_shape_;
 	regression_targets_ = &regression_targets; // get the address pointer, not reference
 }
 
 RandomForest::RandomForest(){
-	
+
 }
 
 void RandomForest::SaveRandomForest(std::ofstream& fout){
@@ -395,7 +402,7 @@ void RandomForest::WriteTree(Node* p, std::ofstream& fout){
 	}
 	else{
 		fout <<"Y" << " "
-			<< p->threshold_ << " " 
+			<< p->threshold_ << " "
 			<< p->is_leaf_ << " "
 			<< p->leaf_identity << " "
 			<< p->depth_ << " "
@@ -431,7 +438,7 @@ Node* RandomForest::ReadTree(std::ifstream& fin){
 }
 
 void RandomForest::LoadRandomForest(std::ifstream& fin){
-	
+
 	int tree_size;
 	fin >> stage_
 		>> local_features_num_

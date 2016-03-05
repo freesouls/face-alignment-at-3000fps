@@ -147,14 +147,14 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 	//const std::vector<cv::Mat_<double> >& current_shapes,
 	std::vector<BoundingBox>& bboxes,
 	std::string file_names){
-	
+
 	// change this function to satisfy your own needs
 	// for .box files I just use another program before this LoadImage() function
 	// the contents in .box is just the bounding box of a face, including the center point of the box
 	// you can just use the face rectangle detected by opencv with a little effort calculating the center point's position yourself.
 	// you may use some utils function is this utils.cpp file
 	// delete unnecessary lines below, my codes are just an example
-	
+
 	std::string fn_haar = "./../haarcascade_frontalface_alt2.xml";
 	cv::CascadeClassifier haar_cascade;
 	bool yes = haar_cascade.load(fn_haar);
@@ -172,7 +172,7 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
     	...
     	1000.jpg
     */
-	
+
 	std::string name;
 	int count = 0;
 	//std::cout << name << std::endl;
@@ -183,7 +183,7 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 
         cv::Mat_<uchar> image = cv::imread(("./../dataset/helen/trainset/" + name).c_str(), 0);
         cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape(("./../dataset/helen/trainset/" + pts).c_str());
-        
+
 
 		if (image.cols > 2000){
 			cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
@@ -199,7 +199,7 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 
         for (int i = 0; i < faces.size(); i++){
             cv::Rect faceRec = faces[i];
-            if (ShapeInRect(ground_truth_shape, faceRec)){ 
+            if (ShapeInRect(ground_truth_shape, faceRec)){
             	// check if the detected face rectangle is in the ground_truth_shape
                 images.push_back(image);
                 ground_truth_shapes.push_back(ground_truth_shape);
@@ -222,6 +222,147 @@ void LoadImages(std::vector<cv::Mat_<uchar> >& images,
 	}
 	std::cout << "get " << bboxes.size() << " faces\n";
 	fin.close();
+}
+
+
+void LoadImages(std::vector<cv::Mat_<uchar> >& images,
+                std::vector<cv::Mat_<double> >& ground_truth_shapes,
+                std::vector<BoundingBox>& bboxes,
+                std::vector<std::string>& image_path_prefix,
+                std::vector<std::string>& image_lists){
+
+    std::string fn_haar = "./../haarcascade_frontalface_alt2.xml";
+    cv::CascadeClassifier haar_cascade;
+    bool yes = haar_cascade.load(fn_haar);
+    std::cout << "face detector loaded : " << yes << std::endl;
+    std::cout << "loading images..." << std::endl;
+
+    int count = 0;
+    for (int i = 0; i < image_path_prefix.size(); i++) {
+        int c = 0;
+        std::ifstream fin;
+        fin.open((image_lists[i]).c_str(), std::ifstream::in);
+        std::string path_prefix = image_path_prefix[i];
+        std::string image_file_name, image_pts_name;
+        std::cout << "loading images in folder: " << path_prefix << std::endl;
+        while (fin >> image_file_name >> image_pts_name){
+			std::string image_path, pts_path;
+			if (path_prefix[path_prefix.size()-1] == '/') {
+				image_path = path_prefix + image_file_name;
+				pts_path = path_prefix + image_pts_name;
+			}
+			else{
+				image_path = path_prefix + "/" + image_file_name;
+				pts_path = path_prefix + "/" + image_pts_name;
+			}
+            cv::Mat_<uchar> image = cv::imread(image_path.c_str(), 0);
+            // std::cout << "image size: " << image.size() << std::endl;
+            cv::Mat_<double> ground_truth_shape = LoadGroundTruthShape(pts_path.c_str());
+
+            if (image.cols > 2000){
+                cv::resize(image, image, cv::Size(image.cols / 4, image.rows / 4), 0, 0, cv::INTER_LINEAR);
+                ground_truth_shape /= 4.0;
+            }
+            else if (image.cols > 1400 && image.cols <= 2000){
+                cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
+                ground_truth_shape /= 3.0;
+            }
+
+            std::vector<cv::Rect> faces;
+            haar_cascade.detectMultiScale(image, faces, 1.1, 2, 0, cv::Size(30, 30));
+
+             for (int i = 0; i < faces.size(); i++){
+                cv::Rect faceRec = faces[i];
+                if (ShapeInRect(ground_truth_shape, faceRec)){
+                    images.push_back(image);
+                    ground_truth_shapes.push_back(ground_truth_shape);
+                    BoundingBox bbox;
+
+                    bbox.start_x = faceRec.x;
+                    bbox.start_y = faceRec.y;
+                    bbox.width = faceRec.width;
+                    bbox.height = faceRec.height;
+                    bbox.center_x = bbox.start_x + bbox.width / 2.0;
+                    bbox.center_y = bbox.start_y + bbox.height / 2.0;
+                    bboxes.push_back(bbox);
+                    count++;
+                    c++;
+                    if (count%100 == 0){
+                        std::cout << count << " images loaded\n";
+                    }
+                    break;
+                }
+             }
+        }
+        std::cout << "get " << c << " faces in " << path_prefix << std::endl;
+        fin.close();
+    }
+
+    std::cout << "get " << bboxes.size() << " faces in total" << std::endl;
+
+}
+
+void LoadImages(std::vector<cv::Mat_<uchar> >& images,
+                std::vector<BoundingBox>& bboxes,
+                std::vector<std::string>& image_path_prefix,
+                std::vector<std::string>& image_lists){
+
+    std::string fn_haar = "./../haarcascade_frontalface_alt2.xml";
+    cv::CascadeClassifier haar_cascade;
+    bool yes = haar_cascade.load(fn_haar);
+    std::cout << "face detector loaded : " << yes << std::endl;
+    std::cout << "loading images..." << std::endl;
+
+    int count = 0;
+    for (int i = 0; i < image_path_prefix.size(); i++) {
+        int c = 0;
+        std::ifstream fin;
+        fin.open((image_lists[i]).c_str(), std::ifstream::in);
+        std::string path_prefix = image_path_prefix[i];
+        std::string image_file_name, image_pts_name;
+        std::cout << "loading images in folder: " << path_prefix << std::endl;
+        while (fin >> image_file_name){
+			std::string image_path, pts_path;
+			if (path_prefix[path_prefix.size()-1] == '/') {
+				image_path = path_prefix + image_file_name;
+			}
+			else{
+				image_path = path_prefix + "/" + image_file_name;
+			}
+            cv::Mat_<uchar> image = cv::imread(image_path.c_str(), 0);
+
+
+            if (image.cols > 2000){
+                cv::resize(image, image, cv::Size(image.cols / 4, image.rows / 4), 0, 0, cv::INTER_LINEAR);
+            }
+            else if (image.cols > 1400 && image.cols <= 2000){
+                cv::resize(image, image, cv::Size(image.cols / 3, image.rows / 3), 0, 0, cv::INTER_LINEAR);
+            }
+
+            std::vector<cv::Rect> faces;
+            haar_cascade.detectMultiScale(image, faces, 1.1, 2, 0, cv::Size(30, 30));
+
+            cv::Rect faceRec = faces[0]; // this position may not contain a face
+            images.push_back(image);
+            BoundingBox bbox;
+            bbox.start_x = faceRec.x;
+            bbox.start_y = faceRec.y;
+            bbox.width = faceRec.width;
+            bbox.height = faceRec.height;
+            bbox.center_x = bbox.start_x + bbox.width / 2.0;
+            bbox.center_y = bbox.start_y + bbox.height / 2.0;
+            bboxes.push_back(bbox);
+            count++;
+            c++;
+            if (count%100 == 0){
+                std::cout << count << " images loaded\n";
+            }
+        }
+        std::cout << "get " << c << " faces in " << path_prefix << std::endl;
+        fin.close();
+    }
+
+    std::cout << "get " << bboxes.size() << " faces in total" << std::endl;
 }
 
 

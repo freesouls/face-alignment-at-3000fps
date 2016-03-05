@@ -58,6 +58,31 @@ public:
 	std::vector<double> local_radius_by_stage_;
 	int initial_guess_;
 	cv::Mat_<double> mean_shape_;
+	double overlap_;
+
+	Parameters() {
+
+	}
+
+	~Parameters() {
+		local_radius_by_stage_.clear();
+	}
+	void output(){
+        std::cout << "local_features_num_: " << local_features_num_ << std::endl;
+        std::cout << "landmarks_num_per_face_: " << landmarks_num_per_face_ << std::endl;
+        std::cout << "regressor_stages_: " << regressor_stages_ << std::endl;
+        std::cout << "tree_depth_: " << tree_depth_ << std::endl;
+        std::cout << "trees_num_per_forest_: " << trees_num_per_forest_ << std::endl;
+		std::cout << "overlap_: " << overlap_ << std::endl;
+        std::cout << "initial_guess_: " << initial_guess_ << std::endl;
+        std::cout << "local_radius_by_stages_:";
+
+        for (int i = 0; i < local_radius_by_stage_.size(); i++) {
+            std::cout << " " << local_radius_by_stage_[i];
+        }
+        std::cout << std::endl;
+    }
+
 };
 
 cv::Mat_<double> ProjectShape(const cv::Mat_<double>& shape, const BoundingBox& bbox);
@@ -73,6 +98,12 @@ cv::Mat_<double> LoadGroundTruthShape(const char* name);
 
 void LoadImages(std::vector<cv::Mat_<uchar> >& images, std::vector<cv::Mat_<double> >& ground_truth_shapes,
 	std::vector<BoundingBox>& bboxes, std::string file_names);
+
+void LoadImages(std::vector<cv::Mat_<uchar> >& images, std::vector<cv::Mat_<double> >& ground_truth_shapes,
+	std::vector<BoundingBox>& bboxes, std::vector<std::string>& image_path_prefix, std::vector<std::string>& image_lists);
+
+void LoadImages(std::vector<cv::Mat_<uchar> >& images, std::vector<BoundingBox>& bboxes,
+	std::vector<std::string>& image_path_prefix, std::vector<std::string>& image_lists);
 
 bool ShapeInRect(cv::Mat_<double>& ground_truth_shape, cv::Rect&);
 

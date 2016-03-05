@@ -77,7 +77,8 @@ regressors_.resize(params_.regressor_stages_);
 			error += CalculateError(augmented_ground_truth_shapes[j], augmented_current_shapes[j]);
 		}
 
-        std::cout << "regression error: " <<  error << ": " << error/shape_increaments.size() << std::endl;
+        std::cout << "train regression error: " <<  error << ", mean error: " << error/shape_increaments.size() << std::endl;
+		Validation(i);
 	}
 }
 
@@ -116,10 +117,11 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
 	}
 
 	std::cout << "train forest of stage:" << stage_ << std::endl;
+	std::cout << "it will take some time to build the Random Forest, please be patient!!!" << std::endl;
 	rd_forests_.resize(params_.landmarks_num_per_face_);
     #pragma omp parallel for
 	for (int i = 0; i < params_.landmarks_num_per_face_; ++i){
-        std::cout << "landmark: " << i << std::endl;
+        // std::cout << "landmark: " << i << std::endl;
 		rd_forests_[i] = RandomForest(params_, i, stage_, regression_targets);
         rd_forests_[i].TrainForest(
 			images,augmented_images_index, augmented_bboxes, augmented_current_shapes,
@@ -184,9 +186,9 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
     		}
             index += rd_forests_[j].all_leaf_nodes_;
     	}
-        if (i%500 == 0 && i > 0){
-            std::cout << "extracted " << i << " images" << std::endl;
-        }
+        // if (i%500 == 0 && i > 0){
+        //     std::cout << "extracted " << i << " images" << std::endl;
+        // }
         global_binary_features[i][params_.trees_num_per_forest_*params_.landmarks_num_per_face_].index = -1;
         global_binary_features[i][params_.trees_num_per_forest_*params_.landmarks_num_per_face_].value = -1.0;
     }
@@ -210,10 +212,14 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
     for (int i = 0; i < params_.landmarks_num_per_face_; ++i){
         targets[i] = new double[augmented_current_shapes.size()];
     }
+	std::cout << "it will take some time to do Linear Regression, please be patient!!!" << std::endl;
     #pragma omp parallel for
     for (int i = 0; i < params_.landmarks_num_per_face_; ++i){
 
-        std::cout << "regress landmark " << i << std::endl;
+        // std::cout << "regress landmark " << i << std::endl;
+		if (i%8==0) {
+			std::cout << "regressing ..." << i << std::endl;
+		}
         for(int j = 0; j< augmented_current_shapes.size();j++){
             targets[i][j] = regression_targets[j](i, 0);
         }
@@ -248,11 +254,11 @@ std::vector<cv::Mat_<double> > Regressor::Train(const std::vector<cv::Mat_<uchar
         cv::Mat_<double> rot;
         cv::transpose(rotations_[i], rot);
         predict_regression_targets[i] = scales_[i] * a * rot;
-        if (i%500 == 0 && i > 0){
-             std::cout << "predict " << i << " images" << std::endl;
-        }
+        // if (i%500 == 0 && i > 0){
+        //      std::cout << "predict " << i << " images" << std::endl;
+        // }
     }
-    std::cout << "\n";
+    // std::cout << "\n";
 
 
     for (int i = 0; i< augmented_current_shapes.size(); i++){
@@ -280,11 +286,11 @@ cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 
 		cv::Mat_<double> rotation;
 		double scale;
-		if(i==0){
-			getSimilarityTransform(ProjectShape(ground_truth_shape, bbox), params_.mean_shape_, rotation, scale);
-		}else{
+		// if(i==0){
+			// getSimilarityTransform(ProjectShape(ground_truth_shape, bbox), params_.mean_shape_, rotation, scale);
+		// }else{
 			getSimilarityTransform(ProjectShape(current_shape, bbox), params_.mean_shape_, rotation, scale);
-		}
+		// }
 
 		cv::Mat_<double> shape_increaments = regressors_[i].Predict(image, current_shape, bbox, rotation, scale);
 		current_shape = shape_increaments + ProjectShape(current_shape, bbox);
@@ -300,10 +306,11 @@ cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 	return res;
 }
 
-cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
-	cv::Mat_<double>& current_shape, BoundingBox& bbox){
 
-	for (int i = 0; i < params_.regressor_stages_; i++){
+cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
+	cv::Mat_<double>& current_shape, BoundingBox& bbox, int stage, bool is_train){
+    int stages = is_train ? stage+1 : params_.regressor_stages_;
+	for (int i = 0; i < stages; i++){
         cv::Mat_<double> rotation;
 		double scale;
 		getSimilarityTransform(ProjectShape(current_shape, bbox), params_.mean_shape_, rotation, scale);
@@ -314,6 +321,18 @@ cv::Mat_<double> CascadeRegressor::Predict(cv::Mat_<uchar>& image,
 	cv::Mat_<double> res = current_shape;
 	return res;
 }
+
+void CascadeRegressor::Validation(int stage) {
+    std::cout << "Validation at stage: " << stage << std::endl;
+    double error = 0.0;
+    for (int i = 0; i < val_images_.size(); i++) {
+        cv::Mat_<double> current_shape = ReProjection(params_.mean_shape_, val_bboxes_[i]);
+        cv::Mat_<double> res = Predict(val_images_[i], current_shape, val_bboxes_[i], stage, true);
+        error += CalculateError(val_ground_truth_shapes_[i], res);
+    }
+    std::cout << "Validation error: " << error << ", mean error: " << error/val_images_.size() << std::endl;
+}
+
 
 Regressor::Regressor(){
 }
@@ -529,17 +548,9 @@ cv::Mat_<double> Regressor::Predict(cv::Mat_<uchar>& image,
 
 	cv::Mat_<double> predict_result(current_shape.rows, current_shape.cols, 0.0);
 
-    //feature_node* binary_features = GetGlobalBinaryFeaturesThread(image, current_shape, bbox, rotation, scale);
+	// feature_node* binary_features = GetGlobalBinaryFeaturesThread(image, current_shape, bbox, rotation, scale);
     feature_node* binary_features = GetGlobalBinaryFeatures(image, current_shape, bbox, rotation, scale);
-//    feature_node* tmp_binary_features = GetGlobalBinaryFeaturesMP(image, current_shape, bbox, rotation, scale);
-//    for (int i = 0; i < params_.trees_num_per_forest_*params_.landmarks_num_per_face_; i++){
-//        std::cout << binary_features[i].index << " ";
-//    }
-//    std::cout << "ha\n";
-//    for (int i = 0; i < params_.trees_num_per_forest_*params_.landmarks_num_per_face_; i++){
-//        std::cout << tmp_binary_features[i].index << " ";
-//    }
-//    std::cout << "ha2\n";
+	// feature_node* tmp_binary_features = GetGlobalBinaryFeaturesMP(image, current_shape, bbox, rotation, scale);
     for (int i = 0; i < current_shape.rows; i++){
 		predict_result(i, 0) = predict(linear_model_x_[i], binary_features);
         predict_result(i, 1) = predict(linear_model_y_[i], binary_features);

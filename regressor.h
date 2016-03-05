@@ -51,11 +51,12 @@ public:
 	Parameters params_;
 	std::vector<cv::Mat_<uchar> > images_;
 	std::vector<cv::Mat_<double> > ground_truth_shapes_;
-
-    //std::vector<struct model*> linear_model_x_;
-    //std::vector<struct model*> linear_model_y_;
-    //std::vector<cv::Mat_<double> > current_shapes_;
 	std::vector<BoundingBox> bboxes_;
+
+	std::vector<cv::Mat_<uchar> > val_images_;
+	std::vector<cv::Mat_<double> > val_ground_truth_shapes_;
+	std::vector<BoundingBox> val_bboxes_;
+
 	//cv::Mat_<double> mean_shape_;
 	std::vector<Regressor> regressors_;
 public:
@@ -66,10 +67,11 @@ public:
 		const std::vector<BoundingBox>& bboxes,
 		Parameters& params);
 	cv::Mat_<double> Predict(cv::Mat_<uchar>& image, cv::Mat_<double>& current_shape, BoundingBox& bbox, cv::Mat_<double>& ground_truth_shape);
-	cv::Mat_<double> Predict(cv::Mat_<uchar>& image, cv::Mat_<double>& current_shape, BoundingBox& bbox);
+	// cv::Mat_<double> Predict(cv::Mat_<uchar>& image, cv::Mat_<double>& current_shape, BoundingBox& bbox);
+	cv::Mat_<double> Predict(cv::Mat_<uchar>& image, cv::Mat_<double>& current_shape, BoundingBox& bbox, int stage = -1, bool is_train = false);
 	void LoadCascadeRegressor(std::string ModelName);
 	void SaveCascadeRegressor(std::string ModelName);
-
+	void Validation(int stage);
 };
 
 #endif

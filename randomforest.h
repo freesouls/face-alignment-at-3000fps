@@ -27,12 +27,13 @@ public:
 	int trees_num_per_forest_;
 	double local_radius_;
 	int all_leaf_nodes_;
+	double overlap_;
 	//cv::Mat_<double> mean_shape_;
 	std::vector<Node*> trees_;
 	std::vector<FeatureLocations> local_position_; // size = param_.local_features_num
 	std::vector<cv::Mat_<double> >* regression_targets_;
 
-	bool TrainForest(//std::vector<cv::Mat_<double> >& regression_targets, 
+	bool TrainForest(//std::vector<cv::Mat_<double> >& regression_targets,
 		const std::vector<cv::Mat_<uchar> >& images,
 		const std::vector<int>& augmented_images_index,
 		//const std::vector<cv::Mat_<double> >& augmented_ground_truth_shapes,
