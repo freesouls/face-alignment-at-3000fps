@@ -1,8 +1,8 @@
 # Face Alignment at 3000fps
 It is an implementation of [Face Alignment at 3000fps via Local Binary Features](http://research.microsoft.com/en-US/people/yichenw/cvpr14_facealignment.pdf), a paper on CVPR 2014
 
-# New!!! Refactoring the code
-## 1. Add Validation in Training Step(error is the same to the paper)
+## New!!! Refactoring the code
+### 1. Add Validation in Training Step(error is the same to the paper)
 add Validation after each stage, output will be like below, now we can see how our model is fit on the validation set, much easier for parameter tuning.(Following is the output when training Helen dataset)
 ```
 training stage: 0 of 6
@@ -35,30 +35,31 @@ train regression error: 207.739, mean error: 0.0289976
 Validation at stage: 5
 Validation error: 17.5538, mean error: 0.0564431
 ```
-## 2. Change to Read Parameters from Configure File
+### 2. Change to Read Parameters from Configure File
 See next section for details.
 
 In pervious versions, when setting the parameters, we have to write hard code in main.cpp, now I changed it to read from a configure file without having to recompile the codes
 
-## 3. Add Helen Dataset Example for Better Understanding
+### 3. Add Helen Dataset Example for Better Understanding
 in the `example` folder, there are some configure files. See next section for details.
 
-# Interpret the Paper's details 
+## Interpret the Paper's details 
 If you are a Chinese, you can go to my blog for more details. [link](http://freesouls.github.io/2015/06/07/face-alignment-local-binary-feature/)
 
-# License
+## License
 If you use my work, please cite my name (Binbin Xu), Thanks in advance.
 This project is released under the BSD 2-Clause license.
 
-#How To Use
-###Requirements:
-1. OpenCV(I just use the basic structures of OpenCV, like cv::Mat, cv::Point)
-2. cmake
+##How To Use
+### Requirements:
+- OpenCV(I just use the basic structures of OpenCV, like cv::Mat, cv::Point)
+- cmake
 
-###Train and Test: 
-1. Download helen dataset from this [link: Helen Dataset](http://ibug.doc.ic.ac.uk/resources/facial-point-annotations/)
-2. unzip the helen dataset and put it under `example` folder, the path will be like `example/helen/trainset/***.jpg` for an image
-3. training
+### Prepare: 
+- Download helen dataset from this [link: Helen Dataset](http://ibug.doc.ic.ac.uk/resources/facial-point-annotations/)
+- unzip the helen dataset and put it under `example` folder, the path will be like `example/helen/trainset/***.jpg` for an image
+
+### Training 
 ```
 mkdir build
 cd build
@@ -68,21 +69,23 @@ make
 ```
 the training starts, you just need to see the output
 
-4. testing images that have ground truth shapes
+### Testing
+- testing images that have ground truth shapes
 
 take helen testset for example.
 ```
 ./application test ../example/helen_test_config_images_with_ground_truth.txt
 ```
-5. testing images that do not have ground truth shapes
 
-take helen testset for example, asumming that we do not known the landmarks' annotations.
+- testing images that do not have ground truth shapes
+
+take helen testset for example, assuming that we do not known the landmarks' annotations. 
 ```
 ./application test ../example/helen_test_config_images_without_ground_truth.txt
 ```
 
 ##Configure Files Explanation:
-###Image List
+###1. Image List
 in `example/` there is a file named `helen_test_images_list_with_ground_truth.txt`, the content is like this:
 ```
 2815405614_1.jpg 2815405614_1.pts
@@ -101,7 +104,7 @@ in `example/` there is a file named `helen_test_images_list_without_ground_truth
 ```
 after we trained a new model, we want to test new images, so just put each image's name in the image_list.txt
 
-###Train configure file
+###2. Training Configure File
 ```
 helenModel  // the model name, name what you like
 200         // params.local_features_num_ = 200;
@@ -147,7 +150,7 @@ params.trees_num_per_forest_ = 8;
 params.initial_guess_ = 5;
 ```
 
-###Test Configure File
+###3. Test Configure File
 `helen_test_config_images_with_ground_truth.txt`
 ```
 helenModel      // model name that we want to use after we have trained
@@ -166,15 +169,31 @@ helenModel      // model name that we want to use after we have trained
 ../example/helen_test_images_list_without_ground_truth.txt // image list
 ```
 
-**Note**
+## Notes
+### 1. overlap
 there is a parameter in `randomforest.cpp`, line 95: 
 
 ```
 double overlap = 0.3; // you can set it to 0.4, 0.25 etc
 ```
 each tree in the forest will be constructed using about **`N*(1-overlap+overlap/T)`** examples, where `N` is the total number of images after augmentation(if your train data set size is 2000, and `initial_guess_` is 5, then N = 2000*(5+1)=12000 images), `T` is the number of trees in each forest.
+### 2. what are .pts files
+[here](http://ibug.doc.ic.ac.uk/resources/facial-point-annotations/) you can download dataset with .pts files, each .pts file contains 68 landmarks positions of each face
 
-# Important
+### 3. what are BoundingBox
+it is just the bounding box of a face, including the center point of the box, you can just use the face rectangle detected by opencv alogrithm with a little effort calculating the center point's position yourself. Example codes are like below
+``` c++
+BoundingBox bbox;
+bbox.start_x = faceRec.x; // faceRec is a cv::Rect, containing the rectangle of the face
+bbox.start_y = faceRec.y;
+bbox.width = faceRec.width;
+bbox.height = faceRec.height;
+bbox.center_x = bbox.start_x + bbox.width / 2.0;
+bbox.center_y = bbox.start_y + bbox.height / 2.0;
+bboxes.push_back(bbox);
+```
+
+### 4. resize the image
 If you try to resize the images, please use the codes below
 ``` c++
 if (image.cols > 2000){
@@ -189,24 +208,25 @@ if (image.cols > 2000){
     ground_truth_shape /= 3.0;
 }
 ```
-##what are .pts files
-[here](http://ibug.doc.ic.ac.uk/resources/300-W/) you can download dataset with .pts files, each .pts file contains 68 landmarks positions of each face
 
-##what are .box files
-.box is just the bounding box of a face, including the center point of the box, you can just use the face rectangle detected by opencv alogrithm with a little effort calculating the center point's position yourself. Example codes  are like below
-``` c++
-BoundingBox bbox;
-bbox.start_x = faceRec.x; // faceRec is a cv::Rect, containing the rectangle of the face
-bbox.start_y = faceRec.y;
-bbox.width = faceRec.width;
-bbox.height = faceRec.height;
-bbox.center_x = bbox.start_x + bbox.width / 2.0;
-bbox.center_y = bbox.start_y + bbox.height / 2.0;
-bboxes.push_back(bbox);
-```
-# Notes
-- Re-write `LoadGroundTruthShape` and `LoadImages` in `utils.cpp` to your own needs.
-- The paper claims for 3000fps for 51 landmarks and high frame rates for different parameters, while my implementation can achieve several hundreds frame rates. What you should be AWARE of is that we both just CALCULATE the time that predicting the landmarks, EXCLUDES the time that detecting faces.
+### 5. Customize
+Re-write `LoadGroundTruthShape` and `LoadImages` in `utils.cpp` for your own needs since different dataset may have different data format.
+
+
+## Results:
+### 1. Detect The Face
+![](./detect.png)
+### 2. Use The Mean Shape As The Initial Shape:
+![](./initial.png)
+### 3. Predict The Landmarks
+![](./final.png)
+### 4. Bad Case
+![](./bad_case.png)
+
+when you test new images that do not have ground truth annotations, you may encounter problems like this, actually it is **NOT** Face Alignment's problem, for the code just uses OpenCV's default face detector, and I choose the first bounding box rectangle returned by OpenCV(line 345 in `utils.cpp`: `cv::Rect faceRec = faces[0];`), you can use all the bounding box by re-writing the function. And sometimes the face detector may fail to detect a face in the image.
+
+# More
+- The paper claims for 3000fps for very high frame rates for different parameters, while my implementation can achieve several hundreds frame rates. What you should be AWARE of is that we both just CALCULATE the time that predicting the landmarks, EXCLUDES the time that detecting faces.
 - If you want to use it for realtime videos, using OpenCV's face detector will achieve about 15fps, since 80% (even more time is used to get the bounding boxes of the faces in an image), so the bottleneck is the speed of face detection, not the speed of landmarks predicting. You are required to find a fast face detector(For example, [libfacedetection](https://github.com/ShiqiYu/libfacedetection))
 - In my project, I use the opencv face detector, you can change to what you like as long as using the same face detector in training and testing
 - it can both run under Windows(use 64bits for large datasets, 32bits may encounter memory problem) and Unix-like(preferred) systems.
@@ -215,25 +235,13 @@ bboxes.push_back(bbox);
 - the results of the model is acceptable for me, deeper and larger random forest(you can change parameters like tree_depth, trees_num_per_forest_ and so on) will lead to better results, but with lower speed. 
 
 
-# Results & standard procedures of testing an image:
-###1. detect the face
-![](./detect.png)
-###2. use the mean shape as the initial shape:
-![](./initial.png)
-###3. predict the landmarks
-![](./final.png)
-###4. bad case
-![](./bad_case.png)
+# ToDo
+- data augmentation like `flip` and `rotate` the images.
+- go on training after loading a trained model(currently we have to re-run the previous stages when we want to train a deeper model with the same parameter setting as a already trained model)
+- I have already develop the multithread one, but the time for predicting one image is slower than sequential one, since creating and destroying threads cost more time, I will optimize it and update it later.
+- I will also develop a version on GPU, and will also upload later.
 
-when you test new images that do not have ground truth annotations, you may encounter problems like this, actually it is **NOT** face alignment's problem, for I just use OpenCV's default face detector, and choose the first bounding box rectangle returned by OpenCV(line 345 in `utils.cpp`: `cv::Rect faceRec = faces[0];`), you can use all the bounding box by re-writing the function. And sometimes the face detector may fail to detect a face in the image.
-
-# Future Development
-- I have add up the openMP to use multithread for faster training, it is really fast, takes an hour when the model is 5 layers deep and 10 trees in each forest with about 8000+ augmented images.
-- I have already develop the multithread one, but the time for predicting one image is slower than sequential one, since creating and destroying threads cost more time.
-- I will optimize it and update it later.
-- Second, I will also develop a version on GPU, and will also upload later.
-
-# THANKS and More
+# THANKS
 Many thanks goes to those appreciate my work.
 
 if you have any question, contact me at declanxu@gmail.com or declanxu@126.com, THANKS.
