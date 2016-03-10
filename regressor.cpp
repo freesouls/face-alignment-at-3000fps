@@ -54,12 +54,11 @@ void CascadeRegressor::Train(const std::vector<cv::Mat_<uchar> >& images,
         augmented_bboxes.push_back(bboxes_[i]);
         augmented_current_shapes.push_back(ReProjection(params_.mean_shape_, bboxes_[i]));
 	}
-
-    std::cout << "augmented size: " << augmented_current_shapes.size() << std::endl;
+	
+	std::cout << "augmented size: " << augmented_current_shapes.size() << std::endl;
 
 	std::vector<cv::Mat_<double> > shape_increaments;
-
-regressors_.resize(params_.regressor_stages_);
+	regressors_.resize(params_.regressor_stages_);
 	for (int i = 0; i < params_.regressor_stages_; i++){
 		std::cout << "training stage: " << i << " of " << params_.regressor_stages_ << std::endl;
 		shape_increaments = regressors_[i].Train(images_,
@@ -78,7 +77,9 @@ regressors_.resize(params_.regressor_stages_);
 		}
 
         std::cout << "train regression error: " <<  error << ", mean error: " << error/shape_increaments.size() << std::endl;
-		Validation(i);
+		if (val_images_.size() > 0) { // check if validation set is add
+			Validation(i);
+		}
 	}
 }
 
