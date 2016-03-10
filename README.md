@@ -3,7 +3,7 @@ It is an implementation of [Face Alignment at 3000fps via Local Binary Features]
 
 ## New!!! Refactoring the code
 ### 1. Add Validation in Training Step(error is the same to the paper)
-add Validation after each stage, output will be like below, now we can see how our model is fit on the validation set, much easier for parameter tuning.(Following is the output when training Helen dataset)
+add Validation after each stage, output will be like below, now we can see how our model is fit on the validation set, much easier for parameter tuning.(Following is the output when training Helen dataset)，the trained model can be **DOWNLOADED** from **[HERE](http://pan.baidu.com/s/1eRspt2U)**, see next section for how to use.
 ```
 training stage: 0 of 6
 train regression error: 836.521, mean error: 0.116767
@@ -82,6 +82,23 @@ take helen testset for example.
 take helen testset for example, assuming that we do not known the landmarks' annotations. 
 ```
 ./application test ../example/helen_test_config_images_without_ground_truth.txt
+```
+
+### Using My Simple Model
+if you do not want to trained a model, I have provide one. you can download a model trained on `helen/trainset` images from **[HERE](http://pan.baidu.com/s/1eRspt2U)**, test error is `0.0564244` on `helen/testset`
+
+- download `helen_trained_model.zip` and unzip it to `example/`
+
+path will be `example/helen_trained_model/helenModel_params.txt` for `helenModel_params.txt`
+
+- in `example/helen_test_config_images_with_ground_truth.txt`
+
+change first line `helenModel` to `../example/helen_trained_model/helenModel`
+
+- run the following command
+
+```
+./application test ../example/helen_test_config_images_with_ground_truth.txt
 ```
 
 ##Configure Files Explanation:
