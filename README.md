@@ -85,7 +85,7 @@ take helen testset for example, assuming that we do not known the landmarks' ann
 ```
 
 ### Using My Simple Model
-if you do not want to trained a model, I have provide one. you can download a model trained on `helen/trainset` images from **[HERE](http://pan.baidu.com/s/1eRspt2U)**, test error is `0.0564244` on `helen/testset`
+if you do not want to train a model, I provide one. You can download a model trained on `helen/trainset` images from **[HERE](http://pan.baidu.com/s/1eRspt2U)**, test error is `0.0564244` on `helen/testset`
 
 - download `helen_trained_model.zip` and unzip it to `example/`
 
@@ -100,6 +100,8 @@ change first line `helenModel` to `../example/helen_trained_model/helenModel`
 ```
 ./application test ../example/helen_test_config_images_with_ground_truth.txt
 ```
+
+- actually, you can put the model wherever you want, just change the path accordingly in `configure file`
 
 ##Configure Files Explanation:
 ###1. Image List
