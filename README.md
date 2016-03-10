@@ -144,10 +144,13 @@ helenModel  // the model name, name what you like
 ../example/helen_train_images_list.txt          // images list of the first dataset
 ../example/otherdataset/                        // root folder of the second dataset
 ../example/otherdatset_train_images_list.txt    // images list of the second dataset
-1                                               // number of datasets for validation
+1                                               // number of datasets for validation, 0 means none
 ../example/helen/testset/                       // root folder that contains the *.jpgs and *.pts
 ../example/helen_test_images_list_with_ground_truth.txt // images list
 ```
+
+off course, you can set number of datasets for validation as `0`, which means no validaion set.
+
 When training, this configure file will be parsed, and images will be loaded. You can refer to `main.cpp` for details how the configure file is parsed.
 
 the parameters setting above is just an example, you have to fine tune the parameters in training for your dataset.
@@ -165,7 +168,7 @@ params.local_radius_by_stage_.push_back(0.1);
 params.local_radius_by_stage_.push_back(0.08);
 params.local_radius_by_stage_.push_back(0.05);
 params.tree_depth_ = 5;
-params.trees_num_per_forest_ = 8;
+params.trees_num_per_forest_ = 12;
 params.initial_guess_ = 5;
 ```
 
