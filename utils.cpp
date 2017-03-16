@@ -379,7 +379,7 @@ double CalculateError(cv::Mat_<double>& ground_truth_shape, cv::Mat_<double>& pr
     cv::Mat_<double> temp;
     temp = ground_truth_shape.rowRange(36, 41)-ground_truth_shape.rowRange(42, 47);
     double x =mean(temp.col(0))[0];
-    double y = mean(temp.col(1))[1];
+    double y = mean(temp.col(1))[0];
     double interocular_distance = sqrt(x*x+y*y);
     double sum = 0;
     for (int i=0;i<ground_truth_shape.rows;i++){
