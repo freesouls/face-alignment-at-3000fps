@@ -50,7 +50,7 @@ If you are a Chinese, you can go to my blog for more details. [link](http://free
 If you use my work, please cite my name (Binbin Xu), Thanks in advance.
 This project is released under the BSD 2-Clause license.
 
-##How To Use
+## How To Use
 ### Requirements:
 - OpenCV(I just use the basic structures of OpenCV, like cv::Mat, cv::Point)
 - cmake
@@ -103,8 +103,8 @@ change first line `helenModel` to `../example/helen_trained_model/helenModel`
 
 - actually, you can put the model wherever you want, just change the path accordingly in `configure file`
 
-##Configure Files Explanation:
-###1. Image List
+## Configure Files Explanation:
+### 1. Image List
 in `example/` there is a file named `helen_test_images_list_with_ground_truth.txt`, the content is like this:
 ```
 2815405614_1.jpg 2815405614_1.pts
@@ -123,7 +123,7 @@ in `example/` there is a file named `helen_test_images_list_without_ground_truth
 ```
 after we trained a new model, we want to test new images, so just put each image's name in the image_list.txt
 
-###2. Training Configure File
+### 2. Training Configure File
 ```
 helenModel  // the model name, name what you like
 200         // params.local_features_num_ = 200;
@@ -172,7 +172,7 @@ params.trees_num_per_forest_ = 12;
 params.initial_guess_ = 5;
 ```
 
-###3. Test Configure File
+### 3. Test Configure File
 `helen_test_config_images_with_ground_truth.txt`
 ```
 helenModel      // model name that we want to use after we have trained
